@@ -1,0 +1,26 @@
+{
+  "extends": "../tsconfig.common.json",
+  "compilerOptions": {
+    "rootDir": "../",
+    "baseUrl": ".",
+    "module": "ES6",
+    "plugins": [
+      {
+        "name": "ts-lit-plugin",
+      }
+    ],
+    "paths": {
+      "@public/*": ["../public/*"],
+      "@views/*": ["views/*"],
+      "@components/*": ["views/components/*"]
+    },
+    "typeRoots": [
+      "../../node_modules/@types",
+      "../@types"
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "../@types/*.d.ts"
+  ],
+}
