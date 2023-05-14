@@ -4,18 +4,28 @@ declare global {
   interface PreloadAPI { 
     openBrowser: (url: string) => {};
 
-    updateUser: (callback: (userInfo: UserInfo) => void) => void;
+    updatePingTime: (callback: (pingTime: number) => void) => void;
+
+    updateUserCallback: (callback: (userInfo: UserInfo) => void) => void;
+    
+    updateConnectionCallback: (callback: () => void) => void;
   }
 
   interface Window { 
     api: PreloadAPI;
-    background: Worker;
+    worker: Worker;
+    pingTime: number;
   }
 
   interface UserInfo {
-    username: string;
-    current_user_id: string;
-    access_token: string;
+    username: string | undefined;
+    current_user_id: string | undefined;
+    access_token: string | undefined;
+  }
+
+  interface WebMessageForm<T> {
+    type: T,
+    data: any
   }
 }
 

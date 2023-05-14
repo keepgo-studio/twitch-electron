@@ -1,4 +1,5 @@
-import { createMachine } from "xstate";
+import { assign, createMachine, send, spawn } from "xstate";
+import { sendTo } from "xstate/lib/actions";
 
 /**
  * 유저가 도저히 authorization 안 될 때가 있을까?
@@ -6,21 +7,54 @@ import { createMachine } from "xstate";
  */
 
 const FbaseAuthMachine =  createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QDMCGsyoK4BcAWAxAKIBuYAdjgAQCMA2gAwC6ioADgPawCWO3H5ViAAeiGgGYA7ADpJc8QBYpAVgA0IAJ5iGADlk6aAJmUBfM+vIcIcIWgzZ8Qzjz4ChohAFodMgJzjxZX9JNU1EQxppQwNjcxA7TFw8aQAbDlQIbnIoJy5efkEkEURPcV9pf0Dg0K0EGl9In1MTdQSHZPIwAHcqWBxUHDBaXJcC9zF66RoQyRiasQbpJrMzIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QDMBGBDWZ0FcAuAFgHQCWEANmAMQBOkJdAxngAS6ED2NJAXuniQ4A7ANoAGALqJQABw6wSA4dJAAPRACYNATiIBGAOx6AHMb16ArBr0aALKYA0IAJ6IzRW9q-aAbGLEGWhbGPgC+oU5omNj4xGSUVIwcALYylHhgbLHiUkggcgpKQirqCLblRADMGma2PrYBtgY+PhZOrggmekTaFpU2PpXalWbGYhbhkRhY7HEU1IwEYIwA1ixJQkLLRTkqBYqCxXmldpX69QHVYpUGI+Xtmu7j5qYaYoM+GuERIEIcEHAVFEZrE9vIDspjoguvojKZzFYbPZjA8EABaHxEfz+PS2SrVAzGSpiOyTEDAmKEUjzMGFQ4lTTaWxEAwWHFiWwaAzvCxM1EmDQePp6DlNAI6JpkimzIgZGjJEhCfhgWkQo6gUo+cws3zacb+AzacwGfnuN7E4ZjC54yrfUJAA */
   id: "fbaseauth",
+
   predictableActionArguments: true,
-  tsTypes: {} as import("./App.state.typegen.d.ts").Typegen0,
-  states: {
-    loading: {},
-    "new state 1": {}
+  tsTypes: {} as import("./App.state.typegen").Typegen0,
+
+  schema: {
+    events: {} as
+    | { type: "redirect authorization" }
+    | { type: "complete auth" }
+    | { type: "check connection" }
   },
 
-  initial: "loading",
+  states: {
+    idle: {
+      on: {
+        "redirect authorization": {
+          target: "idle",
+          internal: true,
+          actions: "open web page"
+        },
 
-  on: {
-    "Event 1": ".new state 1"
+        "complete auth": "terminate",
+
+        "check connection": {
+          target: "idle",
+          actions: "update connection",
+          internal: true
+        }
+      }
+    },
+
+    terminate: {
+      type: "final",
+    }
+  },
+
+  initial: "idle"
+}, {
+  actions: {
+    "open web page": () => {
+    },
+    "update connection": () => {
+      console.log("connection from idle")
+    }
   }
 });
+
 
 /**
  * loading state 일 때 skeleton html보여지게하자
@@ -31,20 +65,21 @@ const FbaseAuthMachine =  createMachine({
  * 이유는 그렇게 json 데이터가 크지 않을거 같음 (나중에 생각)
  */
 export const AppMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAZgBsAJgySmogIwAWeUwDs4xaoAc8gDQgAnonnjVGDaMnimATnlatkkwFYAvq-1pMOfEVIUaegZ5NiQQTm5efkERBAlpWQVlNQ1tPUMxRS0ZOXlVUUtJZytRVXdPdCxcAkI8MABHAFc4bGoAYwALMDayWkooakbYMDwASUoAMxJqUmoAdxI8CjxmUI4uHj4BMNjlDBsDw6PD8X0jBHkrDHl5G0dHURtRZRtykC8MCYAjZGGAQUa2A6hAg-DAGD6ADdyODvr8wACgatBBFNtEdoh1NICs4bM51JorOItGdjFpFDIrM4tKomFImFYtG4PO9KnD-oDgW1+JRulFKMiwqj+TFELjRBgtExNGpcfJnPjJKSEDoMIpDuTFEwbgdlG8PgAbEhQGAQOiUWoNZo4agQZC4GbTBZLEaC9aRLaihA2VTOGT5RTiS6SRSiJk2ZVaGxqpw2bWmRSSVSKfH6ypGk2Qc2ECa0PA27kAW1QBrA2DAbvCGxFGIutzMWlEuM12i01iVGQuUowpWcTD7VkDkkk5LTmFoEFLhDaRuGleFntrSnxPdMsayTj7imVTnEPZHJm1Wp9TK07hZlBIEDggi8KOri9AsQAtHumO+P5+P6Hlc+-ccAMOUQxyqXx7w9dEn0QOwMGpXFlDDQMg3xZV7HkcxbkccQ8VUONTBA9kEU5cC0W2KCEFxN8FEZfsChpdJznsaQUySbD4NENQyhZQ1jVNc0SJrciVCuWxSlUJQfWHXCdxMSUD2sJRbG0akQInUsBMfYRjFKCUJFUIpqRsZRJFKGS93uQ9FJPFTuMqcs8ELPp7TADTIK0i4FWjW5nAUcR8VlDQZL9fEdHEDjHkeO4uPcIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAZgBsAJgySmogIwBWABwAWZfIDsqxaIA0IAJ6ItmjPNWjJE5Zvnj785QF9nBtJhz4ipCjXoM8mxIIJzcvPyCIggS0rIKKupaOvpGYopmmnLyCeJMTqpyru7oWLgEhHhgAI4ArnDY1ADGABZgTWS0lFDUtbBgeACSlABmJNSk1ADuJHgUeMzBHFw8fAIh0aqSBsYIGhiKTEdyAJyq4gqSJ5rFIB4YIwBGyP0AgrXYLYQQ-GAYXQA3ch-J4vMDID4tRaCMKrSIbRCaKQYUQSI6SbTKUSWZQ7EwnUQYTSScQZNSKVSqE6KeS3e6gt6QwhNfiUdoRSjQkKwjlRRCKAkYZRMVTaYmSHTXTR4hAnJgYE6KxVo0RMMniOmlAA2JCgMAgdEolRq9Rw1AgyFwE3GMzmAy5y3Caz5ss0ihkmlENNE1PkaqY0rSsuUCskTmUtnySgpmswOr1kENhBGtDwZpZAFtUFqwNgwA7QiteQiEPJ5NchWimOI3VScuIZU4TkK3UxJBijti8pJY-8IDnmTr+gWec6SxYMiiaxORaKsooZe33cpJBoJLofcLNDdbpQSBA4IIPDCi2PQNEALQNoNXjDHe8Po47kqecrYE9O+HnxAneQHTRroqOgZAojYrhgKT1u2Wx+jGbh3KUDJgO8nwfnC6zfggAriHeCgKASVh+pIC5BuWf7UpcKjCtSFKqL28b6oaaHFphRE4UwBIaJYNKHA4i4kiiq71huJxbs+CGYLQ-ZgMxZ7CCYoielOdgrtS1xMLiQbtjhVhrqSqKiQG4n3HmeAZl0loydyp5fvJpaKAK5jUu2AEkucUj8e6AZcVkqjyB2pKuK4QA */
   id: "app",
 
   predictableActionArguments: true,
-  tsTypes: {} as import("./App.state.typegen.d.ts").Typegen1,
+  tsTypes: {} as import("./App.state.typegen").Typegen1 ,
 
   schema: {
     events: {} as
       | { type: "request checking userInfo to worker" }
-      | { type: "token is"}
+      | { type: "token is"; isValid: boolean }
       | { type: "request data to worker"}
       | { type: "connection"}
       | { type: "first complete"}
-      | { type: "close"},
+      | { type: "close"}
+      | { type: "done.fbaseauth.fbaseauth" }
   },
 
   states: {
@@ -63,19 +98,20 @@ export const AppMachine = createMachine({
 
         "request checking userInfo to worker": {
           target: "start",
-          internal: true
+          internal: true,
+          actions: "request userInfo"
         }
       }
     },
 
     fbaseAuth: {
       invoke: {
-        id: "fbaseAuth",
+        id: "fbaseauth",
         src: FbaseAuthMachine,
         onDone: {
           target: "logged in",
           actions: "remove fbase auth view"
-        }
+        },
       },
 
       on: {
