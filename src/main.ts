@@ -4,8 +4,6 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 
 import type { MessageToMain } from 'server';
 
-const PING_TIME = 1500;
-
 class AppProcess {
     static win: BrowserWindow;
 
@@ -31,11 +29,6 @@ class AppProcess {
 
         // remove when deploy
         this.win.webContents.openDevTools({ mode: "detach" })
-
-        // sync ping interval time with app
-        AppProcess.win
-            .webContents
-            .send("update-ping", PING_TIME);
     }
 }
 
@@ -57,11 +50,6 @@ class MainProcess {
                     AppProcess.win
                         .webContents
                         .send("update-user", msg.data.userInfo);
-                
-                case "check connection from web":
-                    AppProcess.win
-                        .webContents
-                        .send("update-connection");
             }
 
         })
@@ -89,7 +77,7 @@ class MainProcess {
 
     static eventListener() {
         ipcMain.handle("open-browser", (event, url) => {
-            shell.openExternal(`${url}?port=${this.opened_port}&ping=${PING_TIME}`);
+            shell.openExternal(`${url}?port=${this.opened_port}`);
         })
     }
 }

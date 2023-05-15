@@ -4,11 +4,7 @@ declare global {
   interface PreloadAPI { 
     openBrowser: (url: string) => {};
 
-    updatePingTime: (callback: (pingTime: number) => void) => void;
-
     updateUserCallback: (callback: (userInfo: UserInfo) => void) => void;
-    
-    updateConnectionCallback: (callback: () => void) => void;
   }
 
   interface Window { 

@@ -5,7 +5,7 @@ import { parentPort } from "worker_threads"
 import { AddressInfo } from "net";
 
 interface MessageToMain {
-	type: "update user from web" | "sync port" | "check connection from web";
+	type: "update user from web" | "sync port";
 	data: Partial<{
 		userInfo: UserInfo;
 		addressInfo: AddressInfo
@@ -65,13 +65,7 @@ function main(
 		case "GET":
 		if (!req.url || req.url === "/") {
 			sendResponse("public/index.html", "text/html", res);
-		} 
-		else if (req.url === "/conncetion") {
-			parentPort?.postMessage({
-				type: "check connection from web"
-			} as MessageToMain)
-		}
-		else{
+		} else{
 			sendResponse(req.url, getContentType(req.url), res);
 		}
 		break;
@@ -88,7 +82,7 @@ function main(
 			parentPort?.postMessage({
 				type: "update user from web",
 				data: {
-				userInfo: body as unknown as UserInfo
+				userInfo: JSON.parse(body) as UserInfo
 				}
 			} as MessageToMain)
 			})

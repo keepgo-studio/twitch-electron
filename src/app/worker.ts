@@ -1,7 +1,7 @@
 import { DBSchema, openDB } from "idb";
 
 import type { MainHandlingEvents } from "index";
-type WorkerHandlingEvents = "get-user-info" | "get-access-token-valid"
+type WorkerHandlingEvents = "get-user-info" | "get-access-token-valid" | "store-user-info" | "get-followed-channels"
 export type {
   WorkerHandlingEvents
 }
@@ -9,6 +9,7 @@ export type {
 const IDB_NAME = "TwitchPlayer";
 
 const TWITCH_OAUTH_URL = "https://id.twitch.tv/oauth2";
+const FBASE_FUNCTION_URL = "https://asia-northeast3-twitch-group.cloudfunctions.net"
 
 type BroadcasterId = number;
 
@@ -62,13 +63,14 @@ async function main() {
   });
 
   onmessage = async (e: MessageEvent<WebMessageForm<WorkerHandlingEvents>>) => {
-    let toMainMessage: WebMessageForm<MainHandlingEvents>;
+    let toMainMessage: WebMessageForm<MainHandlingEvents> | undefined;
+    let tx, userInfo;
 
     switch(e.data.type) {
       case "get-user-info":
-        const tx = db.transaction("UserInfo", "readonly");
+        tx = db.transaction("UserInfo", "readonly");
 
-        const userInfo = await tx.store.get("root");
+        userInfo = await tx.store.get("root");
         await tx.done;
         toMainMessage = {
           type: "return-user-info",
@@ -93,12 +95,51 @@ async function main() {
           data: isValid
         } as WebMessageForm<MainHandlingEvents>;
         break;
-    }
-    
-    if (!toMainMessage.type) {
-      throw new Error(`unhandle event from main thread. ${e.data.type}`)
+      case "store-user-info":
+        tx = db.transaction("UserInfo", "readwrite");
+        
+        userInfo = e.data.data as UserInfo;
+
+        const mode = (await tx.store.get("root"))!.mode;
+
+        await tx.store.put({
+          "access_token": userInfo.access_token,
+          "current_user_id": userInfo.current_user_id,
+          "username": userInfo.username,
+          mode
+        }, "root");
+
+        await tx.done;
+        break;
+      
+      case "get-followed-channels":
+        tx = db.transaction("UserInfo", "readwrite");
+        
+        userInfo = await tx.store.get("root");
+        await tx.done;
+
+        const channelsList = await fetch(`${FBASE_FUNCTION_URL}/getFollowList`, {
+          method: "GET",
+          headers: {
+            "access_token": userInfo!.access_token,
+            "current_user_id": userInfo!.current_user_id
+          } as any
+        })
+        .then((res) => res.json())
+        .then((data) => data)
+        .catch(() => []);
+
+        toMainMessage = {
+          type: "return-follow-data",
+          data: channelsList
+        } as WebMessageForm<MainHandlingEvents>;
+        break;
     }
 
+    if (!toMainMessage) {
+      return;
+    }
+    
     postMessage(toMainMessage);
   }
 

@@ -1,7 +1,13 @@
 import { AppTag } from "@views/App";
 
 import type { AppHandlingEvnets } from "@views/App";
-type MainHandlingEvents = "worker start" | "return-access-token-valid" | "return-user-info";
+import { WorkerHandlingEvents } from "worker";
+type MainHandlingEvents = 
+  "worker start" | 
+  "return-access-token-valid" | 
+  "return-user-info" |
+  "return-follow-data";
+
 export type {
   MainHandlingEvents
 };
@@ -25,6 +31,9 @@ function init() {
       case "return-access-token-valid":
         appMsgType = "access-token-valid"
         break;
+      
+      case "return-follow-data":
+        appMsgType = "followed-channel-data";
     }
 
     if (appMsgType) {
@@ -35,24 +44,17 @@ function init() {
 
   }
 
-  window.api.updatePingTime((pingTime) => {
-    window.pingTime = pingTime;
-  });
-
   window.api.updateUserCallback((userInfo) => {
-    const appMsgType: AppHandlingEvnets = "return userInfo from web";
+    const appMsgType: AppHandlingEvnets = "return user-info from web";
 
-    // window.worker.postMessage({
-    //   type: "store userInfo"
-    //   data: userInfo
-    // })
-    
-    app.dispatchEvent(new CustomEvent(appMsgType))
-  })
+    window.worker.postMessage({
+      type: "store-user-info",
+      data: userInfo
+    } as WebMessageForm<WorkerHandlingEvents>)
 
-  window.api.updateConnectionCallback(() => {
-    const appMsgType: AppHandlingEvnets = "update connection";
-    app.dispatchEvent(new CustomEvent(appMsgType))
+    app.dispatchEvent(new CustomEvent(appMsgType, {
+      detail: userInfo.username
+    }))
   })
 }
 

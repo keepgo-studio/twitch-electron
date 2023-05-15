@@ -1,10 +1,13 @@
-import { assign, createMachine, send, spawn } from "xstate";
-import { sendTo } from "xstate/lib/actions";
+import { createMachine } from "xstate";
 
 /**
  * 유저가 도저히 authorization 안 될 때가 있을까?
  * 아직 그런 이유는 찾지를 못 해서 따로 handling 하지 않는다
  */
+type FbaseAuthEvents = 
+| { type: "redirect authorization" }
+| { type: "complete auth" }
+| { type: "check connection" }
 
 const FbaseAuthMachine =  createMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5QDMBGBDWZ0FcAuAFgHQCWEANmAMQBOkJdAxngAS6ED2NJAXuniQ4A7ANoAGALqJQABw6wSA4dJAAPRACYNATiIBGAOx6AHMb16ArBr0aALKYA0IAJ6IzRW9q-aAbGLEGWhbGPgC+oU5omNj4xGSUVIwcALYylHhgbLHiUkggcgpKQirqCLblRADMGma2PrYBtgY+PhZOrggmekTaFpU2PpXalWbGYhbhkRhY7HEU1IwEYIwA1ixJQkLLRTkqBYqCxXmldpX69QHVYpUGI+Xtmu7j5qYaYoM+GuERIEIcEHAVFEZrE9vIDspjoguvojKZzFYbPZjA8EABaHxEfz+PS2SrVAzGSpiOyTEDAmKEUjzMGFQ4lTTaWxEAwWHFiWwaAzvCxM1EmDQePp6DlNAI6JpkimzIgZGjJEhCfhgWkQo6gUo+cws3zacb+AzacwGfnuN7E4ZjC54yrfUJAA */
@@ -14,10 +17,7 @@ const FbaseAuthMachine =  createMachine({
   tsTypes: {} as import("./App.state.typegen").Typegen0,
 
   schema: {
-    events: {} as
-    | { type: "redirect authorization" }
-    | { type: "complete auth" }
-    | { type: "check connection" }
+    events: {} as FbaseAuthEvents
   },
 
   states: {
@@ -48,6 +48,8 @@ const FbaseAuthMachine =  createMachine({
 }, {
   actions: {
     "open web page": () => {
+      window.api.openBrowser("https://twitch-group.firebaseapp.com");
+    // window.api.openBrowser("http://localhost:5002");
     },
     "update connection": () => {
       console.log("connection from idle")
@@ -55,6 +57,17 @@ const FbaseAuthMachine =  createMachine({
   }
 });
 
+
+export const APP_CHILD_ID = "fbaseauth";
+
+type AppContext = {};
+
+type AppEvents = 
+| { type: "request checking userInfo to worker" }
+| { type: "token is"; isValid: boolean }
+| { type: "connection"}
+| { type: "first complete"}
+| { type: "close"};
 
 /**
  * loading state 일 때 skeleton html보여지게하자
@@ -65,22 +78,18 @@ const FbaseAuthMachine =  createMachine({
  * 이유는 그렇게 json 데이터가 크지 않을거 같음 (나중에 생각)
  */
 export const AppMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAZgBsAJgySmogIwBWABwAWZfIDsqxaIA0IAJ6ItmjPNWjJE5Zvnj785QF9nBtJhz4ipCjXoM8mxIIJzcvPyCIggS0rIKKupaOvpGYopmmnLyCeJMTqpyru7oWLgEhHhgAI4ArnDY1ADGABZgTWS0lFDUtbBgeACSlABmJNSk1ADuJHgUeMzBHFw8fAIh0aqSBsYIGhiKTEdyAJyq4gqSJ5rFIB4YIwBGyP0AgrXYLYQQ-GAYXQA3ch-J4vMDID4tRaCMKrSIbRCaKQYUQSI6SbTKUSWZQ7EwnUQYTSScQZNSKVSqE6KeS3e6gt6QwhNfiUdoRSjQkKwjlRRCKAkYZRMVTaYmSHTXTR4hAnJgYE6KxVo0RMMniOmlAA2JCgMAgdEolRq9Rw1AgyFwE3GMzmAy5y3Caz5ss0ihkmlENNE1PkaqY0rSsuUCskTmUtnySgpmswOr1kENhBGtDwZpZAFtUFqwNgwA7QiteQiEPJ5NchWimOI3VScuIZU4TkK3UxJBijti8pJY-8IDnmTr+gWec6SxYMiiaxORaKsooZe33cpJBoJLofcLNDdbpQSBA4IIPDCi2PQNEALQNoNXjDHe8Po47kqecrYE9O+HnxAneQHTRroqOgZAojYrhgKT1u2Wx+jGbh3KUDJgO8nwfnC6zfggAriHeCgKASVh+pIC5BuWf7UpcKjCtSFKqL28b6oaaHFphRE4UwBIaJYNKHA4i4kiiq71huJxbs+CGYLQ-ZgMxZ7CCYoielOdgrtS1xMLiQbtjhVhrqSqKiQG4n3HmeAZl0loydyp5fvJpaKAK5jUu2AEkucUj8e6AZcVkqjyB2pKuK4QA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAZgBsAJgySmopgE4ALMqWilAGhABPRAEZxADgxKA7OICsy0YdHq9hyQF8nWtJhz4ipCjXoM9NiQQTm5efkERBAlpWXllVXUtXWiVDDlxM1N5TKY9PSUXN3QsXAJCPDAARwBXOGxqAGMACzBGslpKKGoa2DA8AElKADMSalJqAHcSPAo8ZiCOLh4+AWCopT0MBR3dvd3xZMRDLYsmc6ZJcT1RAwUmQtcQdwxhgCNkPoBBGuxmwgg-DAGE6ADdyMD3p8wMhfs0FoJQisIutEOZpHYrExTDcLOZDjp9IYLOkrApJDtFAZTBZDEVniUod84YRGvxKG1wpQEcEkVzIogrKIMIYHpYTpJRLSLHojghHBg7HYcTcmBZRJJTKZ6S8ADYkKAwCB0SiEYa0PA4JokAC2qF1YGwYB5SzCqwFCD0kkkWwU4kUTEsClEpk1ojlDgUGBp5z0yjxSiYJx1JVoEAdrP1fRdIWW-NRnqUJxM5L0Fk2jjUCjl3pJpjkZZlMq1Fmc9MoJAgcEE7kRefdBYAtOJ0hcx+O1HLByT9rPdqIUx4ytg+26UaAogpTsTyTj5FZDIYCSkHNIlOqCq2jJYpNqni8mWAfn9V8i1hvBX70rdvZKvZqLAjWwZCPMwjzyBRDD9RcMH1Q1IBNV98w-BBIKYGRsk2dRxAUUxRVMICo3rW51ROP0zmUGC0wdJCBxQm5cJLH0twlSDj0Qb0RziRsyz0Fs22KTAnTwG1OmQJ1aPXYR9FpYUNUuQwq2yL1NEJBBvSUbYLwkck5AsctxBcFwgA */
   id: "app",
 
   predictableActionArguments: true,
   tsTypes: {} as import("./App.state.typegen").Typegen1 ,
 
   schema: {
-    events: {} as
-      | { type: "request checking userInfo to worker" }
-      | { type: "token is"; isValid: boolean }
-      | { type: "request data to worker"}
-      | { type: "connection"}
-      | { type: "first complete"}
-      | { type: "close"}
-      | { type: "done.fbaseauth.fbaseauth" }
+    events: {} as AppEvents,
+    context: {} as AppContext
   },
+
+  context: {},
 
   states: {
     start: {
@@ -106,7 +115,7 @@ export const AppMachine = createMachine({
 
     fbaseAuth: {
       invoke: {
-        id: "fbaseauth",
+        id: APP_CHILD_ID,
         src: FbaseAuthMachine,
         onDone: {
           target: "logged in",
@@ -125,15 +134,13 @@ export const AppMachine = createMachine({
 
     "logged in": {
       on: {
-        "request data to worker": {
-          target: "logged in",
-          actions: ["request data", "change skeleton ui"],
-        },
         "first complete": {
           target: "idle",
           actions: ["remove skeleton", "create ui"]
         }
-      }
+      },
+
+      entry: ["request data", "change skeleton ui"]
     },
 
     idle: {
@@ -146,6 +153,5 @@ export const AppMachine = createMachine({
       type: "final"
     }
   },
-
   initial: "start"
 });

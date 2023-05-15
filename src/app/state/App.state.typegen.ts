@@ -48,13 +48,13 @@ export interface Typegen1 {
           services: never;
         };
         eventsCausingActions: {
-          "change skeleton ui": "request data to worker";
+          "change skeleton ui": "done.invoke.fbaseauth" | "token is";
 "create fbase auth view": "token is";
 "create skeleton": "request checking userInfo to worker" | "xstate.init";
 "create ui": "first complete";
 "remove fbase auth view": "done.invoke.fbaseauth";
 "remove skeleton": "first complete";
-"request data": "request data to worker";
+"request data": "done.invoke.fbaseauth" | "token is";
 "request userInfo": "request checking userInfo to worker";
 "send connected": "connection";
         };
