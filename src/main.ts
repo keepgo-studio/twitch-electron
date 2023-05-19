@@ -1,12 +1,13 @@
 import * as path from 'path';
 import { Worker } from 'worker_threads';
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell, dialog } from "electron";
 
 import type { MessageToMain } from 'server';
 
 class AppProcess {
     static win: BrowserWindow;
 
+    static working = false;
 
     static create(port: number) {
         this.win = new BrowserWindow({
@@ -25,7 +26,20 @@ class AppProcess {
 
         this.win.removeMenu();
 
-        this.win.on("close", () => {});
+        this.win.on("close", (e) => {
+            if (!this.working) return;
+
+            const confirm = dialog.showMessageBoxSync({
+                type: "question before close",
+                buttons: ["Yes", "No"],
+                title: "still in progress...",
+                message: "data are still in progress, if you close now, the app won't save data correctly, are you sure to close right now?"
+            });
+
+            if (confirm === 1) {
+                e.preventDefault();
+            }
+        });
 
         // remove when deploy
         this.win.webContents.openDevTools({ mode: "detach" })
@@ -78,7 +92,18 @@ class MainProcess {
     static eventListener() {
         ipcMain.handle("open-browser", (event, url) => {
             shell.openExternal(`${url}?port=${this.opened_port}`);
-        })
+        });
+
+        ipcMain.handle("toggle-aot", () => {
+            if (AppProcess.win.isAlwaysOnTop()) {
+                AppProcess.win.setAlwaysOnTop(false);
+            }
+            else {
+                AppProcess.win.setAlwaysOnTop(true);
+            }
+
+            return AppProcess.win.isAlwaysOnTop();
+        });
     }
 }
 

@@ -7,7 +7,7 @@ import { AddressInfo } from "net";
 interface MessageToMain {
 	type: "update user from web" | "sync port";
 	data: Partial<{
-		userInfo: UserInfo;
+		userInfo: TUserInfo;
 		addressInfo: AddressInfo
 	}>;
 }
@@ -82,7 +82,7 @@ function main(
 			parentPort?.postMessage({
 				type: "update user from web",
 				data: {
-				userInfo: JSON.parse(body) as UserInfo
+				userInfo: JSON.parse(body) as TUserInfo
 				}
 			} as MessageToMain)
 			})
@@ -143,7 +143,7 @@ function openServer(server:http.Server, port: number) {
 	});
 }
 
-const DEFAULT_PORT = 8888;
+let DEFAULT_PORT = 8888;
 
 let server = http.createServer(main)
 openServer(server, DEFAULT_PORT);
@@ -151,9 +151,9 @@ openServer(server, DEFAULT_PORT);
 server.on("error", (err) => {
 	if (err.message.match(/EADDRINUSE/)) {
 		server.close(() => {
-		server = http.createServer(main)
-		
-		openServer(server, 0);
+			server = http.createServer(main)
+			
+			openServer(server, ++DEFAULT_PORT);
 		})
 	}
 	else {

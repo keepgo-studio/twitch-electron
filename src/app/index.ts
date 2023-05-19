@@ -59,6 +59,8 @@ function init() {
 }
 
 function main () {
+  // checkUserIsOnline();
+
   init();
 }
 

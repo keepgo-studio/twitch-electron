@@ -9,12 +9,21 @@ import "@views/auth/TwitchAuth";
 
 import type { WorkerHandlingEvents } from "worker";
 
+type TotalData = {
+  follow_list: Array<TChannel>,
+  group_list: Array<TGroup>,
+  stream_list: Array<TStream>
+};
 type AppHandlingEvnets =
   | "user-update"
   | "access-token-valid"
   | "return user-info from web"
   | "followed-channel-data";
-export type { AppHandlingEvnets };
+  
+export type { 
+  AppHandlingEvnets,
+  TotalData
+};
 
 export const AppTag = "view-app";
 
@@ -34,10 +43,17 @@ class MainView extends LitElement {
 
   private _service;
 
-  private _userInfo: UserInfo;
+  private _userInfo: TUserInfo;
+
+  private _data?: TotalData;
+
+  private _currentGroup = "all";
+  
+  private _playerMode: PlayerMode;
 
   @state()
   _state;
+
 
   @query("view-skeleton")
   ViewSkeleton: Element;
@@ -46,7 +62,7 @@ class MainView extends LitElement {
   ViewMain: Element;
 
   @query("view-twitch-auth")
-  ViewFbaseAuth: Element;
+  ViewTwitchAuth: Element;
 
   constructor() {
     super();
@@ -54,7 +70,7 @@ class MainView extends LitElement {
     this.addEventListener(
       "user-update" as AppHandlingEvnets,
       (e: CustomEvent) => {
-        this._userInfo = e.detail as UserInfo;
+        this._userInfo = e.detail as TUserInfo;
 
         window.worker.postMessage({
           type: "get-access-token-valid",
@@ -76,22 +92,24 @@ class MainView extends LitElement {
     );
 
     this.addEventListener(
-      "return user-info from web" as AppHandlingEvnets,
+      "followed-channel-data" as AppHandlingEvnets,
       (e: CustomEvent) => {
-        const name = e.detail;
+        this._data = e.detail;
 
-        this.ViewFbaseAuth.dispatchEvent(
-          new CustomEvent("user-info", {
-            detail: name,
-          })
-        );
+        this._service.send("first complete");
       }
     );
 
     this.addEventListener(
-      "followed-channel-data" as AppHandlingEvnets,
+      "return user-info from web" as AppHandlingEvnets,
       (e: CustomEvent) => {
-        console.log("[App]: I've got data", e.detail);
+        const name = e.detail;
+
+        this.ViewTwitchAuth.dispatchEvent(
+          new CustomEvent("user-info", {
+            detail: name,
+          })
+        );
       }
     );
 
@@ -111,10 +129,10 @@ class MainView extends LitElement {
             this.ViewSkeleton.classList.remove("show");
           },
           "create fbase auth view": () => {
-            this.ViewFbaseAuth.classList.add("show");
+            this.ViewTwitchAuth.classList.add("show");
           },
           "remove fbase auth view": () => {
-            this.ViewFbaseAuth.classList.remove("show");
+            this.ViewTwitchAuth.classList.remove("show");
           },
           "send connected": sendTo(APP_CHILD_ID, "check connection"),
           "request data": () => {
@@ -122,7 +140,14 @@ class MainView extends LitElement {
               type: "get-followed-channels",
             } as WebMessageForm<WorkerHandlingEvents>);
           },
-          "change skeleton ui": () => {},
+          "change skeleton ui": () => {
+            // TOOD: tell skeleton is after logged in, 
+            // so ui should be changed as showing user that 
+            // the app is processing for updating groups data
+            // ------------temp------------
+            this.ViewSkeleton.innerHTML = 'loading';
+            // ----------------------------
+          },
           "create ui": () => {
             this.ViewMain.classList.add("show");
           },
@@ -146,7 +171,7 @@ class MainView extends LitElement {
   }
 
   protected render() {
-    console.log("[App]:", this._state.value);
+    // console.log("[App]:", this._state.value);
     return html`
       <main>
         <view-skeleton></view-skeleton>
@@ -157,9 +182,10 @@ class MainView extends LitElement {
             : undefined}
         ></view-twitch-auth>
 
-        <view-main></view-main>
-
-        <view-bottom-navbar></view-bottom-navbar>
+        <view-main
+            .data=${this._data}
+            .currentGroup=${this._currentGroup}
+        ></view-main>
       </main>
     `;
   }

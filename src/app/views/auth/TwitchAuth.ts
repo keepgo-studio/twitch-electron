@@ -65,7 +65,7 @@ class TwitchAuthView extends LitElement {
         ${this._name !== ""
           ? html`<div>${this._name}</div>`
           : ""}
-        ${this._state.matches("idle")
+        ${this._state.matches("idle") && this._name == ""
           ? html`<button @click=${this.btnClickHandler}>fbase</button>`
           : ""}
       </div>

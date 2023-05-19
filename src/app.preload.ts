@@ -1,10 +1,25 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("api", {
-  openBrowser: (url) => ipcRenderer.invoke("open-browser", url),
+  openBrowser: (url: string) => {
+    ipcRenderer.invoke("open-browser", url)
+  },
 
-  updateUserCallback: (callback: (userInfo: UserInfo) => void) =>
+  updateUserCallback: (callback: (userInfo: TUserInfo) => void) =>{
     ipcRenderer.on("update-user", (_, userInfo) => {
-      callback(userInfo);
-    }),
+        callback(userInfo);
+    })
+  },
+
+  updateWorking: (working: boolean) => {
+    ipcRenderer.invoke("working", working)
+  },
+
+  updateUserInfo: () => {},
+
+  toggleAlwaysOnTop: async () => {
+    const isAOT = await ipcRenderer.invoke("toggle-aot");
+
+    return isAOT
+  },
 } as PreloadAPI);
