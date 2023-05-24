@@ -42,7 +42,7 @@ export interface Typegen1 {
           
         };
         missingImplementations: {
-          actions: "change skeleton ui" | "create fbase auth view" | "create skeleton" | "create ui" | "remove fbase auth view" | "remove skeleton" | "request data" | "request userInfo" | "send connected";
+          actions: "change skeleton ui" | "create fbase auth view" | "create skeleton" | "create ui" | "get saved data" | "remove fbase auth view" | "remove skeleton" | "request data" | "request userInfo" | "send connected";
           delays: never;
           guards: "unvalid" | "valid";
           services: never;
@@ -52,6 +52,7 @@ export interface Typegen1 {
 "create fbase auth view": "token is";
 "create skeleton": "request checking userInfo to worker" | "xstate.init";
 "create ui": "first complete";
+"get saved data": "first complete";
 "remove fbase auth view": "done.invoke.fbaseauth";
 "remove skeleton": "first complete";
 "request data": "done.invoke.fbaseauth" | "token is";

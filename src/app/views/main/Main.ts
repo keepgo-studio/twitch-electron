@@ -12,8 +12,12 @@ class Main extends LitElement {
   @property()
   data?: TotalData;
 
+  @property()
+  userInfo?: TUserInfo;
+
   /**
-   * group id 1 = "etc", 0 = "all"
+   * group id 0 = "all" 1 = "etc"
+   * 0 didn't save at idb
    */
   @state()
   _currentGroupId = 0; 
@@ -24,13 +28,14 @@ class Main extends LitElement {
   @query("view-bottom-navbar")
   ViewBottomNavbar: Element;
 
+  private _connectedChannels = [];
+
   constructor() {
     super() ;
 
     this.addEventListener(
       "bottom-nav-bar",
       (e: CustomEvent) => {
-        // you can check event origin by e.detail.origin
         if(e.detail.type === "AOT") {
           // pass, not needed right now
         }
@@ -46,38 +51,38 @@ class Main extends LitElement {
         else if (e.detail.type === "open setting") {
 
         }
-        console.log(e.detail)
       }
     )
   }
   connectSocketForChannel(channel: TChannel) {
     // TODO: socket connection for getting live event
+    // this._connectedChannels
   }
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (!this.data) return;
 
     this.data.follow_list.forEach((channel) => {
+      if (!(channel.id in this._connectedChannels))
       this.connectSocketForChannel(channel)
     })
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-      this.ViewGroupList.addEventListener("select-group", (e:CustomEvent) => {
-        this._currentGroupId = e.detail;
+    this.ViewGroupList.addEventListener("select-group", (e:CustomEvent) => {
+      this._currentGroupId = e.detail;
+    });
 
-      });
+    this.ViewGroupList.addEventListener("play-channel", (e:CustomEvent) => {
+      // this.ViewBottomNavbar.getAttribute("playerMode");
+      // this.render();
+      // or
+      // window.open
+    });
 
-      this.ViewGroupList.addEventListener("play-channel", (e:CustomEvent) => {
-        // this.ViewBottomNavbar.getAttribute("playerMode");
-        // this.render();
-        // or
-        // window.open
-      });
+    this.ViewBottomNavbar.addEventListener("home", (e:CustomEvent) => {
 
-      this.ViewBottomNavbar.addEventListener("home", (e:CustomEvent) => {
-
-      })
+    })
   }
 
   render() {
@@ -94,12 +99,12 @@ class Main extends LitElement {
         </main>
 
         <view-bottom-navbar
-        .AOT=${true}
+        .AOT=${this.userInfo?.AOT}
         ></view-bottom-navbar>
       </section>
 
       <section>
-<!-- Player -->
+      <!-- Player -->
       </section>
     `;
   }

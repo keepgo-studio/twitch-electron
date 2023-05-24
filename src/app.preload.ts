@@ -20,6 +20,6 @@ contextBridge.exposeInMainWorld("api", {
   toggleAlwaysOnTop: async () => {
     const isAOT = await ipcRenderer.invoke("toggle-aot");
 
-    return isAOT
+    return isAOT;
   },
 } as PreloadAPI);

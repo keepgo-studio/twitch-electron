@@ -1,6 +1,8 @@
 import { LitElement, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
+import type { WorkerHandlingEvents } from "worker";
+
 @customElement("view-bottom-navbar")
 class BottomNavbar extends LitElement {
   @property()
@@ -34,14 +36,26 @@ class BottomNavbar extends LitElement {
 
   async requestAOT() {
     const result = await window.api.toggleAlwaysOnTop();
+
+    window.worker.postMessage({
+      type: "save-AOT",
+      data: result
+    } as WebMessageForm<WorkerHandlingEvents>)
+
     this.AOT = result;
   }
 
   changeGroupName() {
-    if (this.isHome) return;
+    if (this.isHome) {
+      // TOOD: tell user home cannot modify name
+      return;
+    }
+    // TODO: need UI that get group form which getting name from the user input
     // let changeName = FormMethod.openForm(this);
+
+    // Test code-------------------
     let changeName = "name";
-    // TODO: UI that want to change 
+    // ----------------------------
 
     this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
       detail: {

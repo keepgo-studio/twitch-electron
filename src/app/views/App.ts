@@ -19,7 +19,7 @@ type AppHandlingEvnets =
   | "access-token-valid"
   | "return user-info from web"
   | "followed-channel-data";
-  
+
 export type { 
   AppHandlingEvnets,
   TotalData
@@ -42,18 +42,19 @@ class MainView extends LitElement {
   `;
 
   private _service;
-
-  private _userInfo: TUserInfo;
-
-  private _data?: TotalData;
-
+ 
   private _currentGroup = "all";
   
   private _playerMode: PlayerMode;
 
   @state()
-  _state;
+  _userInfo: TUserInfo;
 
+  @state()
+  _data?: TotalData;
+
+  @state()
+  _state;
 
   @query("view-skeleton")
   ViewSkeleton: Element;
@@ -70,7 +71,8 @@ class MainView extends LitElement {
     this.addEventListener(
       "user-update" as AppHandlingEvnets,
       (e: CustomEvent) => {
-        this._userInfo = e.detail as TUserInfo;
+        // property, state같은 변수가 아니라 bottom navbar에 업데이트가 안 될 수 있음.
+        this._userInfo = { ...e.detail as TUserInfo };
 
         window.worker.postMessage({
           type: "get-access-token-valid",
@@ -94,7 +96,7 @@ class MainView extends LitElement {
     this.addEventListener(
       "followed-channel-data" as AppHandlingEvnets,
       (e: CustomEvent) => {
-        this._data = e.detail;
+        this._data = { ...e.detail };
 
         this._service.send("first complete");
       }
@@ -151,6 +153,11 @@ class MainView extends LitElement {
           "create ui": () => {
             this.ViewMain.classList.add("show");
           },
+          "get saved data": () => {
+            window.worker.postMessage({
+              type: "get"
+            })
+          }
         },
         guards: {
           valid: (_, event) => event.isValid,
@@ -183,8 +190,9 @@ class MainView extends LitElement {
         ></view-twitch-auth>
 
         <view-main
-            .data=${this._data}
-            .currentGroup=${this._currentGroup}
+          .data=${this._data}
+          .userInfo=${this._userInfo}
+          .currentGroup=${this._currentGroup}
         ></view-main>
       </main>
     `;

@@ -25,6 +25,8 @@ declare global {
     username: string | undefined;
     current_user_id: string | undefined;
     access_token: string | undefined;
+    AOT: boolean;
+    mode: "detach" | "player";
   }
 
   interface TGroup {

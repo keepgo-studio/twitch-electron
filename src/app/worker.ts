@@ -6,7 +6,9 @@ type WorkerHandlingEvents =
   | "get-user-info"
   | "get-access-token-valid"
   | "store-user-info"
-  | "get-followed-channels";
+  | "get-followed-channels"
+  | "save-AOT"
+  ;
 export type { WorkerHandlingEvents };
 
 const IDB_NAME = "TwitchPlayer";
@@ -19,9 +21,7 @@ const FBASE_FUNCTION_URL =
 interface PlayerIDB extends DBSchema {
   UserInfo: {
     key: "root";
-    value: TUserInfo & {
-      mode: "detach" | "player";
-    };
+    value: TUserInfo;
   };
 
   Groups: {
@@ -51,6 +51,7 @@ async function main() {
           current_user_id: undefined,
           username: undefined,
           mode: "player",
+          AOT: true
         },
         "root"
       );
@@ -104,7 +105,7 @@ async function main() {
 
       const userInfo = e.data.data as TUserInfo;
 
-      const mode = (await tx.store.get("root"))!.mode;
+      const { mode, AOT } = (await tx.store.get("root"))!;
 
       await tx.store.put(
         {
@@ -112,6 +113,7 @@ async function main() {
           current_user_id: userInfo.current_user_id,
           username: userInfo.username,
           mode,
+          AOT
         },
         "root"
       );
@@ -206,6 +208,18 @@ async function main() {
           group_list
         },
       } as WebMessageForm<MainHandlingEvents>;
+    }
+    else if (e.data.type === "save-AOT") {
+      const AOT = e.data.data;
+      const tx = db.transaction("UserInfo", "readwrite");
+      const userInfo = await tx.store.get("root");
+
+      if (!userInfo) {
+        console.error("cannot get userInfo data from IndexedDB via \"save-AOT\" event");
+        return;
+      }
+      userInfo.AOT = AOT;
+      await tx.store.put(userInfo, "root");
     }
 
     if (!toMainMessage) {
