@@ -1,16 +1,35 @@
-import { LitElement, html } from "lit";
+import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
-import type { WorkerHandlingEvents } from "worker";
+type BottomNavbarEvents =
+  | "toggle AOT"
+  | "change group name"
+  | "go home"
+  | "change mode"
+  | "open setting"
+
+type BottomNavbarDataType = {
+  aot: Boolean
+  currentGroupId: Number,
+  mode: PlayerMode,
+};
+
+export type { 
+  BottomNavbarEvents,
+  BottomNavbarDataType
+};
 
 @customElement("view-bottom-navbar")
 class BottomNavbar extends LitElement {
-  @property()
-  // isHome = true;
-  isHome = false;
+
+  static styles = css`
+    li {
+      cursor: pointer;
+    }  
+  `;
 
   @property()
-  AOT: boolean;
+  data: BottomNavbarDataType
 
   @query("item-AOT")
   ElemeAOT: Element;
@@ -18,49 +37,18 @@ class BottomNavbar extends LitElement {
   @query("component-form")
   ComponentForm: Element;
 
-  constructor() {
-    super();
-
-    this.addEventListener("app", (e:CustomEvent) => {
-      if (e.detail.type === "group name changed") {
-        
+  requestAOT() {
+    this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
+      detail: {
+        type: "toggle AOT",
       }
-      else if (e.detail.type === "home") {
-
-      }
-      else if (e.detail.type === "set mode") {
-
-      }
-    })
-  }
-
-  async requestAOT() {
-    const result = await window.api.toggleAlwaysOnTop();
-
-    window.worker.postMessage({
-      type: "save-AOT",
-      data: result
-    } as WebMessageForm<WorkerHandlingEvents>)
-
-    this.AOT = result;
+    }));
   }
 
   changeGroupName() {
-    if (this.isHome) {
-      // TOOD: tell user home cannot modify name
-      return;
-    }
-    // TODO: need UI that get group form which getting name from the user input
-    // let changeName = FormMethod.openForm(this);
-
-    // Test code-------------------
-    let changeName = "name";
-    // ----------------------------
-
     this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
       detail: {
         type: "change group name",
-        name: changeName
       }
     }));
   }
@@ -97,11 +85,11 @@ class BottomNavbar extends LitElement {
       <nav>
         <div>
           <ul>
-            <li @click=${this.requestAOT}><i>${this.AOT}</i></li>
-            <li @click=${this.changeGroupName}><i></i></li>
-            <li @click=${this.goHome}><i></i></li>
-            <li @click=${this.changeMode}><i></i></li>
-            <li @click=${this.openSetting}><i></i></li>
+            <li @click=${this.requestAOT}><i>${this.data.aot}</i></li>
+            <li @click=${this.changeGroupName}><i>Change Group Name</i></li>
+            <li @click=${this.goHome}><i>go Home</i></li>
+            <li @click=${this.changeMode}><i>Change Mode</i></li>
+            <li @click=${this.openSetting}><i>Open Setting</i></li>
           </ul>
         </div>
       </nav>

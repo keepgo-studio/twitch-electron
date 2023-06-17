@@ -8,6 +8,7 @@ type WorkerHandlingEvents =
   | "store-user-info"
   | "get-followed-channels"
   | "save-AOT"
+  | "change-group-name"
   ;
 export type { WorkerHandlingEvents };
 
