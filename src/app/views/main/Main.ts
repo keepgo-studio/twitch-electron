@@ -54,8 +54,9 @@ class Main extends LitElement {
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (_changedProperties.has("data")) {
       this.data.follow_list.forEach((channel) => {
-        if (!(channel.id in this._connectedChannels))
-        this.connectSocketForChannel(channel)
+        
+        if (!(channel.broadcaster_id in this._connectedChannels))
+          this.connectSocketForChannel(channel)
       })
     }
     
@@ -136,7 +137,7 @@ class Main extends LitElement {
     return html`
       <section id="main-section">
         <view-group-list 
-          .data=${this.data.group_list}
+          .groups=${this.data?.group_list}
         ></view-group-list>
 
         <main>

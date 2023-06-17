@@ -150,9 +150,9 @@ async function main() {
           } as any,
         }
       )
-        .then((res) => res.json())
-        .then((data) => data)
-        .catch(() => []);
+      .then((res) => res.json())
+      .then((data) => data)
+      .catch(() => []);
 
       await Promise.all(follow_list.map(
           async (channel: {
@@ -166,12 +166,12 @@ async function main() {
             return await tx2.store
               .add(
                 {
-                  id: parseInt(channel.broadcaster_id),
+                  broadcaster_id: channel.broadcaster_id,
                   broadcaster_name: channel.broadcaster_name,
                   broadcaster_login: channel.broadcaster_login,
                   followed_at: channel.followed_at,
                 },
-                parseInt(channel.broadcaster_id)
+                channel.broadcaster_id
               )
               .then(async (result) => {
                 const tx3 = db.transaction("Groups", "readwrite");
@@ -187,12 +187,12 @@ async function main() {
 
                 return await tx3.store.put(
                   {
-                    id: parseInt(channel.broadcaster_id),
+                    broadcaster_id: channel.broadcaster_id,
                     broadcaster_name: channel.broadcaster_name,
                     broadcaster_login: channel.broadcaster_login,
                     followed_at: channel.followed_at,
                   },
-                  parseInt(channel.broadcaster_id)
+                  channel.broadcaster_id
                 );
               })
           }

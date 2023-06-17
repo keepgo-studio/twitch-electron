@@ -10,7 +10,7 @@ type BottomNavbarEvents =
 
 type BottomNavbarDataType = {
   aot: Boolean
-  currentGroupId: Number,
+  currentGroupId: number,
   mode: PlayerMode,
 };
 

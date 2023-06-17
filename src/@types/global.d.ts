@@ -19,7 +19,7 @@ declare global {
     pingTime: number;
   }
 
-  type BroadcasterId = number;
+  type BroadcasterId = string;
 
   interface TUserInfo {
     username: string | undefined;
@@ -37,7 +37,7 @@ declare global {
   }
 
   interface TChannel {
-    id: BroadcasterId,
+    broadcaster_id: BroadcasterId,
     broadcaster_name: string;
     broadcaster_login: string;
     followed_at: string;
