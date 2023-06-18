@@ -1,6 +1,7 @@
 import { DBSchema, openDB } from "idb";
 
 import type { MainHandlingEvents } from "index";
+import type { MainViewHandlingEvents } from "@views/main/Main";
 
 type WorkerHandlingEvents =
   | "get-user-info"
@@ -9,6 +10,8 @@ type WorkerHandlingEvents =
   | "get-followed-channels"
   | "save-AOT"
   | "change-group-name"
+  | "append-new-group"
+  | "get-store-group-list"
   ;
 export type { WorkerHandlingEvents };
 
@@ -73,7 +76,7 @@ async function main() {
   });
 
   onmessage = async (e: MessageEvent<WebMessageForm<WorkerHandlingEvents>>) => {
-    let toMainMessage: WebMessageForm<MainHandlingEvents> | undefined;
+    let toMainMessage: WebMessageForm<MainHandlingEvents> | WebMessageForm<MainViewHandlingEvents> | undefined;
 
     if (e.data.type === "get-user-info") {
       const tx = db.transaction("UserInfo", "readonly");
@@ -221,6 +224,35 @@ async function main() {
       }
       userInfo.AOT = AOT;
       await tx.store.put(userInfo, "root");
+    }
+    else if (e.data.type === "append-new-group") {
+      const tx = db.transaction("Groups", "readwrite");
+      const newGroupName = e.data.data;
+  
+      const group: TGroup = {
+        channels: [],
+        color: "#9146FF",
+        created_at: new Date().getTime().toString(),
+        name: newGroupName
+      }
+  
+      const result = await tx.store.put(group)
+        .then(() => true)
+        .catch(() => false)
+      
+      toMainMessage = {
+        type: "append group result",
+        data: result,
+      } as WebMessageForm<MainViewHandlingEvents>;
+    }
+    else if (e.data.type === "get-store-group-list") {
+      const tx = db.transaction("Groups", "readwrite");
+      const groupList = await tx.store.getAll();
+
+      postMessage({
+        type: "getting group list result",
+        data: groupList
+      } as WebMessageForm<MainViewHandlingEvents>);
     }
 
     if (!toMainMessage) {

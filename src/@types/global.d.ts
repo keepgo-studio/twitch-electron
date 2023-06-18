@@ -20,6 +20,7 @@ declare global {
   }
 
   type BroadcasterId = string;
+  type GroupId = string;
 
   interface TUserInfo {
     username: string | undefined;

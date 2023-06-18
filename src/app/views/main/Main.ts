@@ -1,5 +1,6 @@
 import { LitElement, PropertyValueMap, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
+import { GroupListEvents } from "@views/main/group-list/GroupList";
 import { Prompt } from "@views/components/Dialog";
 
 import "@views/main/group-list/GroupList"
@@ -9,6 +10,14 @@ import "@views/bottom-navbar/BottomNavbar"
 import type { TotalData } from "@views/App";
 import type { BottomNavbarEvents, BottomNavbarDataType } from "@views/bottom-navbar/BottomNavbar";
 import type { WorkerHandlingEvents } from "worker";
+
+type MainViewHandlingEvents =
+  | "append group result"
+  | "getting group list result";
+
+export type {
+  MainViewHandlingEvents
+}
 
 @customElement("view-main")
 class Main extends LitElement {
@@ -27,12 +36,6 @@ class Main extends LitElement {
 
   @query("#main-section")
   MainSection: Element;
-
-  @query("view-group-list")
-  ViewGroupList: Element;
-
-  @query("view-bottom-navbar")
-  ViewBottomNavbar: Element;
 
   private _connectedChannels = [];
 
@@ -70,22 +73,6 @@ class Main extends LitElement {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    this.ViewGroupList.addEventListener("select-group", (e:CustomEvent) => {
-      this._bottomNavbarData.currentGroupId = e.detail;
-      this._bottomNavbarData = { ...this._bottomNavbarData };
-    });
-
-    this.ViewGroupList.addEventListener("play-channel", (e:CustomEvent) => {
-      // this.ViewBottomNavbar.getAttribute("playerMode");
-      // this.render();
-      // or
-      // window.open
-    });
-
-    this.ViewBottomNavbar.addEventListener("home", (e:CustomEvent) => {
-
-    })
-
     this.MainSection.addEventListener(
       "bottom-nav-bar",
       (e: CustomEvent) => {
@@ -108,7 +95,7 @@ class Main extends LitElement {
             return;
           }
 
-          new Prompt('Type you want to change the group name').show().then(newName => {
+          new Prompt('Type changed group name').show().then(newName => {
             // TODO: need to sync with worker
             window.worker.postMessage({
               type: "change-group-name",
@@ -131,6 +118,30 @@ class Main extends LitElement {
         }
       }
     )
+
+    this.MainSection.addEventListener("group-list", (e:CustomEvent) => {
+      const eventType = e.detail.type as GroupListEvents;
+
+      if (eventType === "append new group") {
+        new Prompt('Type new group name').show().then(newGroupName => {
+          window.worker.postMessage({
+            type: "append-new-group",
+            data: newGroupName,
+          } as WebMessageForm<WorkerHandlingEvents>);
+        })
+      }
+    })
+
+    window.worker.addEventListener("message", (e: MessageEvent<WebMessageForm<MainViewHandlingEvents>>) => {
+      if (e.data.type === "append group result") {
+        window.worker.postMessage({
+          type: "get-store-group-list",
+        } as WebMessageForm<WorkerHandlingEvents>);
+      }
+      else if (e.data.type === "getting group list result") {
+        console.log("get data", e.data.data);
+      }
+    })
   }
 
   render() {

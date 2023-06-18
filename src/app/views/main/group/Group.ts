@@ -28,10 +28,7 @@ class Group extends LitElement {
     }
     
     const groupHTML = (group: TGroup) => {
-      const channels = group.channels.map(channelId => this.data!.follow_list.find(({ broadcaster_id }) => {
-        console.log(broadcaster_id, channelId)
-        return broadcaster_id === channelId
-      })!);
+      const channels = group.channels.map(channelId => this.data!.follow_list.find(({ broadcaster_id }) => broadcaster_id === channelId)!);
 
       return html`
         <ul>
