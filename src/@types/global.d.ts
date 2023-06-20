@@ -4,11 +4,9 @@ declare global {
   interface PreloadAPI { 
     openBrowser: (url: string) => {};
 
-    updateUserCallback: (callback: (userInfo: TUserInfo) => void) => void;
+    addTwitchAuthLitsener: (callback: (userInfo: TUserInfo) => void) => void;
 
     updateWorking: (working: boolean) => {};
-
-    updateUserInfo: () => {};
 
     toggleAlwaysOnTop: () => Promise<boolean>;
   }
@@ -22,6 +20,10 @@ declare global {
   type BroadcasterId = string;
   type GroupId = string;
 
+  interface TProfile {
+    username: string;
+  }
+
   interface TUserInfo {
     username: string | undefined;
     current_user_id: string | undefined;
@@ -31,7 +33,7 @@ declare global {
   }
 
   interface TGroup {
-    name: string;
+    name: GroupId;
     channels: Array<BroadcasterId>;
     color: string;
     created_at: string;
@@ -55,9 +57,12 @@ declare global {
     viewer_count: number
   }
 
+  type MessageOrigins =  "worker" | "view-app" | "view-profile" | "viwe-auth" | "view-group";
+
   interface WebMessageForm<T> {
+    origin: MessageOrigins,
     type: T,
-    data: any
+    data?: any
   }
 
   type PlayerMode = "player" | "detach";

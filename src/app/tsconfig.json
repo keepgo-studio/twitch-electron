@@ -11,6 +11,8 @@
     ],
     "paths": {
       "@public/*": ["../public/*"],
+      "@utils/*": ["utils/*"],
+      "@state/*": ["state/*"],
       "@views/*": ["views/*"],
       "@components/*": ["views/components/*"]
     },

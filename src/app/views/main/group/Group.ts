@@ -1,53 +1,51 @@
-import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { repeat } from "lit/directives/repeat.js";
+// import { LitElement, html } from "lit";
+// import { customElement, property } from "lit/decorators.js";
+// import { repeat } from "lit/directives/repeat.js";
 
-import "@views/main/group/channel/Channel";
+// import "@views/main/group/channel/Channel";
 
-import type { TotalData } from "@views/App";
+// @customElement("view-group")
+// class Group extends LitElement {
+//   @property()
+//   data?: TotalData
 
-@customElement("view-group")
-class Group extends LitElement {
-  @property()
-  data?: TotalData
+//   @property()
+//   groupId?: number
 
-  @property()
-  groupId?: number
+//   openPlayer() {
 
-  openPlayer() {
+//   }
 
-  }
-
-  render() {
-    if (this.data === undefined || this.groupId === undefined) {
-      return html`
-        <section>
-          400 Error
-        </section>
-      `
-    }
+//   render() {
+//     if (this.data === undefined || this.groupId === undefined) {
+//       return html`
+//         <section>
+//           400 Error
+//         </section>
+//       `
+//     }
     
-    const groupHTML = (group: TGroup) => {
-      const channels = group.channels.map(channelId => this.data!.follow_list.find(({ broadcaster_id }) => broadcaster_id === channelId)!);
+//     const groupHTML = (group: TGroup) => {
+//       const channels = group.channels.map(channelId => this.data!.follow_list.find(({ broadcaster_id }) => broadcaster_id === channelId)!);
 
-      return html`
-        <ul>
-          ${repeat(
-            channels, 
-            (channel) => channel.broadcaster_id,
-            (channel) => html`
-              <li>
-                ${channel.broadcaster_name}
-              </li>
-            `)}
-        </ul>
-      `;
-    }
+//       return html`
+//         <ul>
+//           ${repeat(
+//             channels, 
+//             (channel) => channel.broadcaster_id,
+//             (channel) => html`
+//               <li>
+//                 ${channel.broadcaster_name}
+//               </li>
+//             `)}
+//         </ul>
+//       `;
+//     }
 
-    return html`
-      <section>
-        ${groupHTML(this.data.group_list[this.groupId])}
-      </section>
-    `;
-  }
-}
+//     return html`
+//       <section>
+//         ${groupHTML(this.data.group_list[this.groupId])}
+//       </section>
+//     `;
+//   }
+// }

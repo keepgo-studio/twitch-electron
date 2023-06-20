@@ -1,23 +1,31 @@
-import { createMachine } from "xstate";
+import { assign, createMachine } from "xstate";
 
 /**
  * 유저가 도저히 authorization 안 될 때가 있을까?
  * 아직 그런 이유는 찾지를 못 해서 따로 handling 하지 않는다
  */
-type FbaseAuthEvents = 
+export type FbaseAuthEvents = 
 | { type: "redirect authorization" }
-| { type: "complete auth" }
+| { type: "complete auth"; userInfo: TUserInfo }
 | { type: "check connection" }
+;
 
 const FbaseAuthMachine =  createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QDMBGBDWZ0FcAuAFgHQCWEANmAMQBOkJdAxngAS6ED2NJAXuniQ4A7ANoAGALqJQABw6wSA4dJAAPRACYNATiIBGAOx6AHMb16ArBr0aALKYA0IAJ6IzRW9q-aAbGLEGWhbGPgC+oU5omNj4xGSUVIwcALYylHhgbLHiUkggcgpKQirqCLblRADMGma2PrYBtgY+PhZOrggmekTaFpU2PpXalWbGYhbhkRhY7HEU1IwEYIwA1ixJQkLLRTkqBYqCxXmldpX69QHVYpUGI+Xtmu7j5qYaYoM+GuERIEIcEHAVFEZrE9vIDspjoguvojKZzFYbPZjA8EABaHxEfz+PS2SrVAzGSpiOyTEDAmKEUjzMGFQ4lTTaWxEAwWHFiWwaAzvCxM1EmDQePp6DlNAI6JpkimzIgZGjJEhCfhgWkQo6gUo+cws3zacb+AzacwGfnuN7E4ZjC54yrfUJAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QDMBGBDWZ0FcAuAFgHQCWEANmAMQBOkJdAxngAS6ED2NJAXuniQ4A7ANoAGALqJQABw6wSA4dJAAPRACYNATiIBGAOx6AHMb16ArBr0aALKYA0IAJ6IzRW9q-aAbGLEGWhbGPgC+oU5omNj4xGSUVIwcALYylHhgbLHiUkggcgpKQirqCLblRADMGma2PrYBtgY+PhZOrggmekTaFpU2PpXalWbGYhbhkRhY7HEU1IwEYIwA1ixJQkLLRTkqBYqCxXmldpX69QHVYpUGI+Xtmu7j5qYaYoM+GuERIEIcEHAVFEZrE9vIDspjoguvojKZzFYbPZjA8EABaCw9bxmDQGbTGfHVPSTEDAmKEUjzMGFQ4lTTaWxEAwWfx6MS2XHvCwM1EmDQePps8oGAI6JoksmzIgZGjJEhCfhgakQo6gUo+cxM3zacb+PHmAy89xvSpiYZjC62SqVb6hIA */
   id: "fbaseauth",
 
   predictableActionArguments: true,
   tsTypes: {} as import("./App.state.typegen").Typegen0,
 
   schema: {
-    events: {} as FbaseAuthEvents
+    events: {} as FbaseAuthEvents,
+    context: {} as {
+      userInfo?: TUserInfo
+    }
+  },
+  
+  context: {
+    userInfo: undefined
   },
 
   states: {
@@ -29,7 +37,10 @@ const FbaseAuthMachine =  createMachine({
           actions: "open web page"
         },
 
-        "complete auth": "terminate",
+        "complete auth": {
+          target: "terminate",
+          actions: "update name"
+        },
 
         "check connection": {
           target: "idle",
@@ -41,6 +52,9 @@ const FbaseAuthMachine =  createMachine({
 
     terminate: {
       type: "final",
+      data: (context, _) => ({
+        userInfo: context.userInfo
+      })
     }
   },
 
@@ -53,21 +67,25 @@ const FbaseAuthMachine =  createMachine({
     },
     "update connection": () => {
       console.log("connection from idle")
-    }
+    },
+    "update name": assign({
+      userInfo: (context, event) => event.userInfo
+    }) 
   }
 });
 
 
 export const APP_CHILD_ID = "fbaseauth";
 
-type AppContext = {};
+export type AppContext = {};
 
-type AppEvents = 
-| { type: "request checking userInfo to worker" }
+export type AppEvents = 
+| { type: "user choosed"; name: string | undefined }
 | { type: "token is"; isValid: boolean }
-| { type: "connection"}
-| { type: "first complete"}
-| { type: "close"};
+| { type: 'done.invoke.fbaseauth', data: { userInfo: TUserInfo } }
+| { type: "connection" }
+| { type: "first complete" }
+| { type: "close" };
 
 /**
  * loading state 일 때 skeleton html보여지게하자
@@ -78,11 +96,11 @@ type AppEvents =
  * 이유는 그렇게 json 데이터가 크지 않을거 같음 (나중에 생각)
  */
 export const AppMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAZgBsAJgySmopgE4ALMqWilAGhABPRAEZxADgxKA7OICsy0YdHq9hyQF8nWtJhz4ipCjXoM9NiQQTm5efkERBElDY3FTBUtTJRT1LV0EdWlRPRtJPSYLcSUmPT0lFzd0LFwCQjwwAEcAVzhsagBjAAswDrJaSihqZtgwPABJSgAzEmpSagB3EjwKPGYgji4ePgFgqKU9DAVjk9OT8XTEQ0OLJjumSXFcgwUmCtcQdwwpgCNkUYAgs1sF1CBB+GAMAMAG7kSG-f5gZDArrrQShbYRPaIczZURWJimXIWcwXHT6QwWDCFY6SY6KAymCyGSqfaoIwEowgdfiUXrhSho4IYgWRRBWUQYQxvSzXST4yl6S4IRwYOx2Im5QqiSSmUysr4AGxIUBgEDolEIU1oeBwnRIAFtUIawNgwELNmEdmKEHpJPkjuJFExLApRKZdaJlQ4FBgmXc9MoSSVrgbqrQIC7ucbRh6QltRdjfRYdVKLBY1BWdWoFNHinHDK8FI8LHo9RZnKzKCQIHBBO50QXvUWALTian3SdTtTKkdUs6mGxGeQKctpjy1bCDr1Y0BRBQ3SnNonyKyxMkZBzSJQl8odoyWKT6j5fDlgIEg7eY3Z78WJak5P68p+rqFjRrYMiGMUphQaUCiNuI64YMapqQBaX6Fr+CDwUwMiLgc6jiAoMGEuBsamHIegltciS3MoSEZi6GHDlhuTEUci5MkohgUUUDjKv646yDkeplMRNjlEhbp4A6AzIG6zG7sI+jiDYGBBoufpEUYxymAJBxxlIxEwX6uSWO8LhAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAdgAcARgwA2AKwyATE3EBOVQBZJUjQBoQAT0SSZo2RoDMi1eKWTRFx4oC+z-Wkw58RUhRr0GSTYkEE5uXn5BEQQJaXklFXUtHX0jBAsZJlkFCyZFOVVTcVFVV3d0DAAzACNkWDAAQQBXbAALQgh+MAxaSgA3cm6aurBkFtbmYI4uHj4BEOjJbWkJVSY5FRkLDVE5UVTjUWkmE6ZJDRkTRUULOTKQDyra+ua2wgBjfkowd4jKScEYVmkQWxjOFgw+Qke2K4iYDgsBwQUgwGxOVi2ii28PujwANiQoDAIHRKIRKrQ8DhqJ8ALaoPFgbBgAEhIF-KLGLbSVSiGQaDRqawlbRI5SKDDnKw7XJKfnFXEVWgQRkfAn1VnTcJzTkIcVyWRnDbiXL2JgyMWKDQYWw2W63JYyVQWRWYADuyB4hCa9TwNNaJC4kE1oRmHNBevEEqYF2KikkTAsDhkWzFMdkkjtGjk4jk1zyd3ulBIEDggg8gLDOojAFoLYZEDWDeoW622y63A8Kl4CJXtSDQNEBRD4vGJJc1CakcsM3abs6nBoXJ3HsMXuM+8D5oOwZIDYLLKJRCpzuIo9OoxhsxYTOJBTn1HINK6MASiZBSZvwzuEJILOoMFELEBWUFQFHOC9xBtJ0pFyDRCiYVRC3KTBlUZL9qx-ewbAwRM1HkGwLkzes0m0KDbRNZRcz3RxxBfZk8FpXpkGZDCB2ERB40UMwlyQ3YTi2ApxEta0ll5Gxbz2ICOxQjAPR4Njtw4hAl2nGQoMuGx4yQqNBXOVxXCAA */
   id: "app",
 
   predictableActionArguments: true,
-  tsTypes: {} as import("./App.state.typegen").Typegen1 ,
+  tsTypes: {} as import("./App.state.typegen").Typegen1,
 
   schema: {
     events: {} as AppEvents,
@@ -93,7 +111,7 @@ export const AppMachine = createMachine({
 
   states: {
     start: {
-      entry: "create skeleton",
+      entry: ["get choosed user info from worker"],
 
       on: {
         "token is": [{
@@ -103,13 +121,7 @@ export const AppMachine = createMachine({
         }, {
           target: "logged in",
           cond: "valid"
-        }],
-
-        "request checking userInfo to worker": {
-          target: "start",
-          internal: true,
-          actions: "request userInfo"
-        }
+        }]
       }
     },
 
@@ -119,7 +131,7 @@ export const AppMachine = createMachine({
         src: FbaseAuthMachine,
         onDone: {
           target: "logged in",
-          actions: "remove fbase auth view"
+          actions: ["remove fbase auth view", "get user info from auth"]
         },
       },
 
@@ -129,18 +141,18 @@ export const AppMachine = createMachine({
           internal: true,
           actions: "send connected"
         }
-      }
+      },
     },
 
     "logged in": {
       on: {
         "first complete": {
           target: "idle",
-          actions: ["remove skeleton", "create ui"]
+          actions: "get saved data"
         }
       },
 
-      entry: ["request data", "change skeleton ui"]
+      entry: ["sync followed list", "create skeleton"]
     },
 
     idle: {
@@ -148,12 +160,21 @@ export const AppMachine = createMachine({
         close: "terminate"
       },
 
-      entry: "get saved data"
+      entry: ["remove skeleton", "create ui"]
     },
 
     terminate: {
       type: "final"
+    },
+
+    wait: {
+      on: {
+        "user choosed": "start"
+      },
+
+      entry: ["create profile view"],
+      exit: "remove profile view"
     }
   },
-  initial: "start"
+  initial: "wait"
 });

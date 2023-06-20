@@ -18,6 +18,7 @@
         eventsCausingActions: {
           "open web page": "redirect authorization";
 "update connection": "check connection";
+"update name": "complete auth";
         };
         eventsCausingDelays: {
           
@@ -37,27 +38,30 @@ export interface Typegen1 {
         internalEvents: {
           "done.invoke.fbaseauth": { type: "done.invoke.fbaseauth"; data: unknown; __tip: "See the XState TS docs to learn how to strongly type this." };
 "xstate.init": { type: "xstate.init" };
+"xstate.stop": { type: "xstate.stop" };
         };
         invokeSrcNameMap: {
           
         };
         missingImplementations: {
-          actions: "change skeleton ui" | "create fbase auth view" | "create skeleton" | "create ui" | "get saved data" | "remove fbase auth view" | "remove skeleton" | "request data" | "request userInfo" | "send connected";
+          actions: "create fbase auth view" | "create profile view" | "create skeleton" | "create ui" | "get choosed user info from worker" | "get saved data" | "get user info from auth" | "remove fbase auth view" | "remove profile view" | "remove skeleton" | "send connected" | "sync followed list";
           delays: never;
           guards: "unvalid" | "valid";
           services: never;
         };
         eventsCausingActions: {
-          "change skeleton ui": "done.invoke.fbaseauth" | "token is";
-"create fbase auth view": "token is";
-"create skeleton": "request checking userInfo to worker" | "xstate.init";
+          "create fbase auth view": "token is";
+"create profile view": "xstate.init";
+"create skeleton": "done.invoke.fbaseauth" | "token is";
 "create ui": "first complete";
+"get choosed user info from worker": "user choosed";
 "get saved data": "first complete";
+"get user info from auth": "done.invoke.fbaseauth";
 "remove fbase auth view": "done.invoke.fbaseauth";
+"remove profile view": "user choosed" | "xstate.stop";
 "remove skeleton": "first complete";
-"request data": "done.invoke.fbaseauth" | "token is";
-"request userInfo": "request checking userInfo to worker";
 "send connected": "connection";
+"sync followed list": "done.invoke.fbaseauth" | "token is";
         };
         eventsCausingDelays: {
           
@@ -69,7 +73,7 @@ export interface Typegen1 {
         eventsCausingServices: {
           "fbaseauth": "connection" | "token is";
         };
-        matchesStates: "fbaseAuth" | "idle" | "logged in" | "start" | "terminate";
+        matchesStates: "fbaseAuth" | "idle" | "logged in" | "start" | "terminate" | "wait";
         tags: never;
       }
   

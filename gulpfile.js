@@ -13,7 +13,7 @@ const esConfig = require("./src/app/webpack.config.js");
 const builds = {
   es: () =>
     gulp
-      .src(["src/app/index.ts", "src/app/worker.ts"])
+      .src(["src/app/index.ts", "src/app/worker/worker.ts"])
       .pipe(named())
       .pipe(webpack(esConfig))
       .on("error", console.error)

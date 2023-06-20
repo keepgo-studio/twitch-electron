@@ -1,7 +1,10 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Interpreter, State } from "xstate";
+import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 
+import type { AuthPostEvents, WorkerPostEvents } from "@utils/events";
+import { FbaseAuthEvents } from "@state/App.state";
 /**
  * auth button 하나 만들기
  *
@@ -12,9 +15,10 @@ import { Interpreter, State } from "xstate";
 @customElement("view-twitch-auth")
 class TwitchAuthView extends LitElement {
   private _subscribed = false;
+  private _userInfo: TUserInfo;
 
   @property()
-  authService?: Interpreter<any>;
+  authService?: Interpreter<any, any, FbaseAuthEvents>;
 
   @state()
   _state: State<any>;
@@ -25,28 +29,49 @@ class TwitchAuthView extends LitElement {
   // @state()
   // ping = 0
 
+  authWorkerListener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
+    if (e.data.type === "after-open-user-db") {
+      setTimeout(() => this.authService?.send({
+        type: "complete auth",
+        userInfo: this._userInfo
+      }), 2000);
+    }
+  }
+
   constructor() {
     super();
+    
+    addWorkerListener(this.authWorkerListener.bind(this));
 
-    this.addEventListener("user-info", (e: CustomEvent) => {
-      this._name = e.detail;
+    window.api.addTwitchAuthLitsener((userInfo) => {
+      this._userInfo = userInfo;
+      this._name = userInfo.username!;
 
-      setTimeout(() => this.authService?.send("complete auth"), 2000);
+      const message: WebMessageForm<AuthPostEvents> = {
+        origin: "viwe-auth",
+        type: "open-user-db-to-worker",
+        data: this._name
+      }
+      sendToWorker(message);
     })
   }
 
-  private _stid?: ReturnType<typeof setTimeout>;
-  handleConnection() {
-    if (this._stid) {
-      clearTimeout(this._stid);
-      this._stid = undefined;
-    }
+  // private _stid?: ReturnType<typeof setTimeout>;
+  // handleConnection() {
+  //   if (this._stid) {
+  //     clearTimeout(this._stid);
+  //     this._stid = undefined;
+  //   }
 
-    // TODO: hide button
+  //   // TODO: hide button
 
-    this._stid = setTimeout(() => {
-      // TODO: show button
-    }, window.pingTime);
+  //   this._stid = setTimeout(() => {
+  //     // TODO: show button
+  //   }, window.pingTime);
+  // }
+
+  disconnectedCallback(): void {
+    removeWorkerListener(this.authWorkerListener);
   }
 
   btnClickHandler() {
