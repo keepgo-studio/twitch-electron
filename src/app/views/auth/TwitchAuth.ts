@@ -17,7 +17,7 @@ class TwitchAuthView extends LitElement {
   private _subscribed = false;
   private _userInfo: TUserInfo;
 
-  @property()
+  @property({ type: Object })
   authService?: Interpreter<any, any, FbaseAuthEvents>;
 
   @state()

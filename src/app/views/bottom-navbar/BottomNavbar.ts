@@ -1,24 +1,6 @@
 import { LitElement, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 
-type BottomNavbarEvents =
-  | "toggle AOT"
-  | "change group name"
-  | "go home"
-  | "change mode"
-  | "open setting"
-
-type BottomNavbarDataType = {
-  aot: Boolean
-  currentGroupId: number,
-  mode: PlayerMode,
-};
-
-export type { 
-  BottomNavbarEvents,
-  BottomNavbarDataType
-};
-
 @customElement("view-bottom-navbar")
 class BottomNavbar extends LitElement {
 
@@ -28,68 +10,28 @@ class BottomNavbar extends LitElement {
     }  
   `;
 
-  @property()
-  data: BottomNavbarDataType
+  @property({ type: Object })
+  userInfo?: TUserInfo
 
-  @query("item-AOT")
-  ElemeAOT: Element;
+  fireEvent(e: MouseEvent) {
+    const target = e.currentTarget as Element;
+    const eventType = target.className;
 
-  @query("component-form")
-  ComponentForm: Element;
-
-  requestAOT() {
-    this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
-      detail: {
-        type: "toggle AOT",
-      }
-    }));
-  }
-
-  changeGroupName() {
-    this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
-      detail: {
-        type: "change group name",
-      }
-    }));
-  }
-
-  goHome() {
-    this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
-      detail: {
-        type: "go home"
-      }
-    }));
-  }
-  
-  changeMode() {
-    this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
-      detail: {
-        type: "change mode"
-      }
-    }));
-  }
-
-  openSetting() {
-    this.parentElement?.dispatchEvent(new CustomEvent("bottom-nav-bar", {
-      detail: {
-        type: "open setting"
-      }
-    }));
+    this.dispatchEvent(new CustomEvent(eventType));
   }
 
   // ["alwaysOnTop", "editGroupName", "home", "playerMode", "setting"]
 
   render() {
     return html`
-      <component-form></component-form>
       <nav>
         <div>
           <ul>
-            <li @click=${this.requestAOT}><i>${this.data.aot}</i></li>
-            <li @click=${this.changeGroupName}><i>Change Group Name</i></li>
-            <li @click=${this.goHome}><i>go Home</i></li>
-            <li @click=${this.changeMode}><i>Change Mode</i></li>
-            <li @click=${this.openSetting}><i>Open Setting</i></li>
+            <li class="aot" @click=${this.fireEvent}><i>${this.userInfo?.AOT}</i></li>
+            <li class="changeGroupeName" @click=${this.fireEvent}><i>Change Group Name</i></li>
+            <li class="goHome" @click=${this.fireEvent}><i>go Home</i></li>
+            <li class="changeMode" @click=${this.fireEvent}><i>Change Mode</i></li>
+            <li class="openSetting" @click=${this.fireEvent}><i>Open Setting</i></li>
           </ul>
         </div>
       </nav>

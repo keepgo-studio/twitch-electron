@@ -1,38 +1,33 @@
 import { LitElement, PropertyValueMap, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
-import { GroupListEvents } from "@views/main/group-list/GroupList";
-import { Prompt } from "@views/components/Dialog";
+import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
+import { Confirm, Prompt } from "@views/components/Dialog";
 
 // import "@views/main/group-list/GroupList"
 // import "@views/main/group/Group"
-// import "@views/bottom-navbar/BottomNavbar"
+import "@views/bottom-navbar/BottomNavbar"
 
-type MainViewHandlingEvents =
-  | "append group result"
-  | "getting group list result";
+import type { MainPostEvents, WorkerPostEvents } from "@utils/events";
 
-export type {
-  MainViewHandlingEvents
+const findGroup = (groupId: GroupId, groupList?: Array<TGroup>): TGroup | undefined => {
+  if (!groupList) return undefined;
+  
 }
 
 @customElement("view-main")
 class Main extends LitElement {
-  @property()
+  @property({ type: Array})
   followList?: Array<TChannel>
-  @property()
+  @property({ type: Array})
   groupList?: Array<TGroup>
-  @property()
+  @property({ type: Array})
   streamList?: Array<TStream>
-  @property()
-  userInfo!: TUserInfo;
+  @property({ type: Object})
+  userInfo?: TUserInfo;
 
   @state()
-  _currentGroupId: GroupId
+  _currentGroupId: GroupId = "all"
 
-  /**
-   * group id 0 = "all" 1 = "etc"
-   * 0 didn't save at idb
-   */
   // @state()
   // _bottomNavbarData: BottomNavbarDataType
 
@@ -41,14 +36,32 @@ class Main extends LitElement {
 
   private _connectedChannels = [];
 
-  constructor() {
-    super() ;
+  mainWorkerLisetener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
+    const eventType = e.data.type;
+    
+    if (eventType === "result-save-aot") {
+      const aot = e.data.data;
+      this.userInfo!.AOT = aot;
+      this.userInfo = { ...this.userInfo! };
+    }
+    else if (eventType === "result-changing-group-name") {
+      const newName = e.data.data;
+      const idx = this.groupList?.findIndex(group => group.name === this._currentGroupId);
 
-    // this._bottomNavbarData = {
-    //   aot: true,
-    //   currentGroupId: 0,
-    //   mode: "player"
-    // }
+      this.groupList![idx!].name = newName;
+      this.groupList = [ ...this.groupList! ];
+    }
+    else if (eventType === "result-changing-player-mode") {
+      const mode = e.data.data;
+      this.userInfo!.mode = mode;
+      this.userInfo = { ...this.userInfo! };
+    }
+  }
+
+  constructor() {
+    super();
+
+    addWorkerListener(this.mainWorkerLisetener.bind(this));
   }
 
   connectSocketForChannel(channel: TChannel) {
@@ -57,110 +70,99 @@ class Main extends LitElement {
   }
 
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    // if (_changedProperties.has("data")) {
-    //   this.data.follow_list.forEach((channel) => {
-        
-    //     if (!(channel.broadcaster_id in this._connectedChannels))
-    //       this.connectSocketForChannel(channel)
-    //   })
-    // }
-    
-    // if (_changedProperties.has("userInfo")) {
-    //   this._bottomNavbarData = {
-    //     aot: this.userInfo.AOT,
-    //     currentGroupId: this._bottomNavbarData.currentGroupId,
-    //     mode: this.userInfo.mode
-    //   }
-    // }
+    if (_changedProperties.has("userInfo")) {
+      window.api.syncAot(this.userInfo!.AOT);
+    }
   }
 
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    // this.MainSection.addEventListener(
-    //   "bottom-nav-bar",
-    //   (e: CustomEvent) => {
-    //     const eventType = e.detail.type as BottomNavbarEvents;
+  changeGroupListener(e: CustomEvent) {
+    const groupId = e.detail;
 
-    //     if(eventType === "toggle AOT") {
-    //       window.api.toggleAlwaysOnTop().then(result => {
-    //         window.worker.postMessage({
-    //           type: "save-AOT",
-    //           data: result
-    //         } as WebMessageForm<WorkerHandlingEvents>)
-            
-    //         this._bottomNavbarData.aot = result;
-    //         this._bottomNavbarData = { ...this._bottomNavbarData }
-    //       });
-    //     }
-    //     else if (eventType === "change group name") {
-    //       if (this._bottomNavbarData.currentGroupId === 0) {
-    //         // TODO: alram that user cannot change group name for all tab
-    //         return;
-    //       }
+    this._currentGroupId = groupId;
+  }
 
-    //       new Prompt('Type changed group name').show().then(newName => {
-    //         // TODO: need to sync with worker
-    //         window.worker.postMessage({
-    //           type: "change-group-name",
-    //           data: {
-    //             groupId: this._bottomNavbarData.currentGroupId,
-    //             newName
-    //           },
-    //         } as WebMessageForm<WorkerHandlingEvents>);
-    //       })
-    //     }
-    //     else if (eventType === "go home") {
-    //       this._bottomNavbarData.currentGroupId = 0;
-    //       this._bottomNavbarData = { ...this._bottomNavbarData }
-    //     }
-    //     else if (eventType === "change mode") {
-    //       // this._playerMode
-    //     }
-    //     else if (eventType === "open setting") {
+  playListener() {
+    console.log("open player");
+  }
 
-    //     }
-    //   }
-    // )
+  async aotListener() {
+    const toggle = !this.userInfo?.AOT;
+    const result = await window.api.syncAot(toggle);
 
-    // this.MainSection.addEventListener("group-list", (e:CustomEvent) => {
-    //   const eventType = e.detail.type as GroupListEvents;
+    if (!result) {
+      throw new Error("error while setting AOT from Electron");
+    }
 
-    //   if (eventType === "append new group") {
-    //     new Prompt('Type new group name').show().then(newGroupName => {
-    //       window.worker.postMessage({
-    //         type: "append-new-group",
-    //         data: newGroupName,
-    //       } as WebMessageForm<WorkerHandlingEvents>);
-    //     })
-    //   }
-    // })
+    const message: WebMessageForm<MainPostEvents> = {
+      origin: "view-main",
+      type: "save-aot-result",
+      data: toggle
+    }
 
-    // window.worker.addEventListener("message", (e: MessageEvent<WebMessageForm<MainViewHandlingEvents>>) => {
-    //   if (e.data.type === "append group result") {
-    //     window.worker.postMessage({
-    //       type: "get-store-group-list",
-    //     } as WebMessageForm<WorkerHandlingEvents>);
-    //   }
-    //   else if (e.data.type === "getting group list result") {
-    //     console.log("get data", e.data.data);
-    //   }
-    // })
+    sendToWorker(message);
+  }
+  async changeGroupNameListener() {
+    if (this._currentGroupId === "all") {
+      new Confirm("you cannot change group name for 'all' group");
+      return;
+    }
+    const newName = await new Prompt('Type changed group name').show()
+    const message: WebMessageForm<MainPostEvents> = {
+      origin: "view-main",
+      type: "change-group-name",
+      data: {
+        id: this._currentGroupId,
+        name: newName
+      }
+    }
+    sendToWorker(message);
+  }
+  goHomeListener() {
+    this._currentGroupId = "all";
+  }
+  chagneModeListener() {
+    const currentMode = this.userInfo!.mode;
+    const changeMode = currentMode === "detach" ? "player" : "detach";
+
+    const message: WebMessageForm<MainPostEvents> = {
+      origin: "view-main",
+      type: "change-player-mode",
+      data: changeMode
+    }
+    sendToWorker(message);
+  }
+  openSettingListener() {
+    // TODO: openSetting()
+  }
+
+  disconnectedCallback(): void {
+    removeWorkerListener(this.mainWorkerLisetener);
   }
 
   render() {
-    console.log("main", this.followList, this.groupList, this.streamList)
     return html`
       <section id="main-section">
         Main
         <view-group-list 
+          @changeGroup=${this.changeGroupListener}
           .groups=${this.groupList}
         ></view-group-list>
 
         <main>
           <view-group
+            @play=${this.playListener}
+            .group=${findGroup(this._currentGroupId, this.groupList)}
+            .channels=${this.followList}
           ></view-group>
         </main>
 
         <view-bottom-navbar
+          @aot=${this.aotListener}
+          @changeGroupeName=${this.changeGroupNameListener}
+          @goHome=${this.goHomeListener}
+          @changeMode=${this.chagneModeListener}
+          @openSetting=${this.openSettingListener}
+          .userInfo=${this.userInfo}
         ></view-bottom-navbar>
       </section>
 

@@ -94,16 +94,11 @@ class MainProcess {
             shell.openExternal(`${url}?port=${this.opened_port}`);
         });
 
-        ipcMain.handle("toggle-aot", () => {
-            if (AppProcess.win.isAlwaysOnTop()) {
-                AppProcess.win.setAlwaysOnTop(false);
-            }
-            else {
-                AppProcess.win.setAlwaysOnTop(true);
-            }
+        ipcMain.handle("sync-aot", (_, aot) => {
+            AppProcess.win.setAlwaysOnTop(aot);
 
-            return AppProcess.win.isAlwaysOnTop();
-        });
+            return true;
+        })
     }
 }
 

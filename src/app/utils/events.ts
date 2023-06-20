@@ -8,6 +8,9 @@ type WorkerPostEvents =
   | "return-followed-list"
   | "return-group-list"
   | "return-stream-channels"
+  | "result-save-aot"
+  | "result-changing-group-name"
+  | "result-changing-player-mode"
   ;
 
 type AppPostEvents =
@@ -26,10 +29,16 @@ type AuthPostEvents =
 type ProfilePostEvents = 
   | "get-profiles"
   ;
+type MainPostEvents = 
+  | "save-aot-result"
+  | "change-group-name"
+  | "change-player-mode"
+  ;
 
 export type {
   ProfilePostEvents,
   WorkerPostEvents,
   AuthPostEvents,
+  MainPostEvents,
   AppPostEvents
 }

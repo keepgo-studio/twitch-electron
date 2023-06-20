@@ -8,7 +8,7 @@ declare global {
 
     updateWorking: (working: boolean) => {};
 
-    toggleAlwaysOnTop: () => Promise<boolean>;
+    syncAot: (aot: boolean) => Promise<boolean>;
   }
 
   interface Window { 
@@ -57,7 +57,7 @@ declare global {
     viewer_count: number
   }
 
-  type MessageOrigins =  "worker" | "view-app" | "view-profile" | "viwe-auth" | "view-group";
+  type MessageOrigins =  "worker" | "view-app" | "view-profile" | "viwe-auth" | "view-group" | "view-main";
 
   interface WebMessageForm<T> {
     origin: MessageOrigins,

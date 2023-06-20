@@ -404,7 +404,6 @@ export class ViewAuthHandler extends ViewHandler {
       const eventType = e.data.type as AuthPostEvents;
 
       if (eventType === "open-user-db-to-worker") {
-        console.log("worker auth", eventType)
         const name = e.data.data;
         this.saveUserProfile(name);
         

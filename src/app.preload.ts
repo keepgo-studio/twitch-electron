@@ -15,9 +15,5 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("working", working)
   },
 
-  toggleAlwaysOnTop: async () => {
-    const isAOT = await ipcRenderer.invoke("toggle-aot");
-
-    return isAOT;
-  },
+  syncAot: async (aot) => await ipcRenderer.invoke("sync-aot", aot)
 } as PreloadAPI);

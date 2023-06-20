@@ -1,7 +1,7 @@
 import { LitElement, html, css, PropertyValueMap } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
-import { interpret, sendTo } from "xstate";
-import { APP_CHILD_ID, AppMachine } from "@state/App.state";
+import { Interpreter, interpret, sendTo } from "xstate";
+import { APP_CHILD_ID, AppMachine, FbaseAuthEvents } from "@state/App.state";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 
 import "@views/profile/Profile";
@@ -193,7 +193,6 @@ class MainView extends LitElement {
   }
 
   protected render() {
-    console.log(this._state.value);
     return html`
       <main>
         <view-profile
@@ -204,7 +203,7 @@ class MainView extends LitElement {
 
         <view-twitch-auth
           .authService=${this._state.children
-            ? this._state.children[APP_CHILD_ID]
+            ? this._state.children[APP_CHILD_ID] as Interpreter<any, any, FbaseAuthEvents>
             : undefined}
         ></view-twitch-auth>
 

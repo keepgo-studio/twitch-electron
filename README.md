@@ -64,3 +64,5 @@ setTimeout(() => {
 트위치가 공식적으로 api endpoint외의 것들은 다 끊어버림 (gql같은거)
 
 그래서 그냥 제한적으로 서비스 제공하자
+
+component간 소통은 필요없다. 그냥 reactive variable와 custom event handler로 핸들링하면 되는데!
