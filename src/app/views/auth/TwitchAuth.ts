@@ -17,6 +17,9 @@ class TwitchAuthView extends LitElement {
   private _subscribed = false;
   private _userInfo: TUserInfo;
 
+  @property()
+  username: string
+
   @property({ type: Object })
   authService?: Interpreter<any, any, FbaseAuthEvents>;
 
@@ -43,16 +46,23 @@ class TwitchAuthView extends LitElement {
     
     addWorkerListener(this.authWorkerListener.bind(this));
 
-    window.api.addTwitchAuthLitsener((userInfo) => {
-      this._userInfo = userInfo;
-      this._name = userInfo.username!;
+    window.api.addTwitchAuthLitsener((oidc) => {
+      this._userInfo = {
+        AOT: true,
+        mode: "player",
+        access_token: oidc.access_token,
+        current_user_id: oidc.current_user_id,
+        username: oidc.username
+      }
 
-      const message: WebMessageForm<AuthPostEvents> = {
+      this._name = this._userInfo.username!;
+
+      const messageOpenDB: WebMessageForm<AuthPostEvents> = {
         origin: "viwe-auth",
         type: "open-user-db-to-worker",
         data: this._name
       }
-      sendToWorker(message);
+      sendToWorker(messageOpenDB);
     })
   }
 
@@ -87,6 +97,9 @@ class TwitchAuthView extends LitElement {
 
     return html`
       <div>
+        <p>
+          Logging in with ${this.username}
+        </p>
         ${this._name !== ""
           ? html`<div>${this._name}</div>`
           : ""}

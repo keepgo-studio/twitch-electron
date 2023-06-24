@@ -30,6 +30,8 @@ class MainView extends LitElement {
   @state()
   _state;
   @state()
+  _choosedUsername: string
+  @state()
   _userInfo?: TUserInfo;
   @state()
   _currentGroupId: GroupId
@@ -114,18 +116,29 @@ class MainView extends LitElement {
               })
             }
             else {
+              this._choosedUsername = event.name;
+              
               const message: WebMessageForm<AppPostEvents> = {
                 type: "get-userinfo-by-name",
                 origin: "view-app",
                 data: event.name
               };
-              
+
               sendToWorker(message);
             }
           },
           "get user info from auth": (_, event) => {
+            // event from auth machine, check TwitchAuth.ts
+            this._userInfo?.AOT
             this._userInfo = event.data.userInfo;
-            console.log("from auth", this._userInfo);
+
+            const message: WebMessageForm<AppPostEvents> = {
+              origin: "viwe-auth",
+              type: "sync-userinfo",
+              data: this._userInfo
+            }
+      
+            sendToWorker(message);
           },
           "create skeleton": () => {
             this.ViewSkeleton.classList.add("show");
@@ -205,6 +218,7 @@ class MainView extends LitElement {
           .authService=${this._state.children
             ? this._state.children[APP_CHILD_ID] as Interpreter<any, any, FbaseAuthEvents>
             : undefined}
+          .username=${this._choosedUsername}
         ></view-twitch-auth>
 
         <view-main

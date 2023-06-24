@@ -15,6 +15,7 @@ type WorkerPostEvents =
 
 type AppPostEvents =
   | "get-userinfo-by-name"
+  | "sync-userinfo"
   | "check-access-token-valid"
   | "sync-followed-list"
   | "get-followed-list"

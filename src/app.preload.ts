@@ -5,9 +5,9 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("open-browser", url)
   },
 
-  addTwitchAuthLitsener: (callback: (userInfo: TUserInfo) => void) =>{
-    ipcRenderer.on("update-user", (_, userInfo) => {
-        callback(userInfo);
+  addTwitchAuthLitsener: (callback: (oidc: TwitchOIDCFromFirebase) => void) =>{
+    ipcRenderer.on("update-user", (_, oidc) => {
+        callback(oidc);
     })
   },
 

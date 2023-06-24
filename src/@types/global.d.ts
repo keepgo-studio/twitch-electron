@@ -4,13 +4,18 @@ declare global {
   interface PreloadAPI { 
     openBrowser: (url: string) => {};
 
-    addTwitchAuthLitsener: (callback: (userInfo: TUserInfo) => void) => void;
+    addTwitchAuthLitsener: (callback: (userInfo: TwitchOIDCFromFirebase) => void) => void;
 
     updateWorking: (working: boolean) => {};
 
     syncAot: (aot: boolean) => Promise<boolean>;
   }
 
+  interface TwitchOIDCFromFirebase {
+    username: string,
+    current_user_id: string,
+    access_token: string,
+  }
   interface Window { 
     api: PreloadAPI;
     worker: Worker;

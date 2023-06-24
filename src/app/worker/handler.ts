@@ -224,6 +224,13 @@ export class ViewAppHandler extends ViewHandler {
 
         sendToMainThread(message);
       }
+      else if (eventType === "sync-userinfo") {
+        const userInfo = e.data.data;
+        
+        const tx = DB.userDB!.transaction("UserInfo", "readwrite");
+
+        await tx.store.put(userInfo, "root");
+      }
       else if (eventType === "check-access-token-valid") {
         const accessToken = e.data.data;
 
