@@ -1,7 +1,7 @@
 import DB from "./db";
 import { addSelfListener, sendToMainThread } from "./utils";
 
-import type { AppPostEvents, AuthPostEvents, MainPostEvents, ProfilePostEvents, WorkerPostEvents } from "@utils/events";
+import type { AddChannelsPostEvents, AppPostEvents, AuthPostEvents, GroupPostEvents, MainPostEvents, ProfilePostEvents, WorkerPostEvents } from "@utils/events";
 
 const TWITCH_OAUTH_URL = "https://id.twitch.tv/oauth2";
 const FBASE_FUNCTION_URL =
@@ -106,6 +106,7 @@ export class ViewAppHandler extends ViewHandler {
                   broadcaster_name: broadcaster_name,
                   broadcaster_login: broadcaster_login,
                   followed_at: followed_at,
+                  group_id: "etc"
                 },
                 broadcaster_id
               )
@@ -121,15 +122,13 @@ export class ViewAppHandler extends ViewHandler {
               .catch(async (err) => {
                 const channelTx = DB.userDB!.transaction("Channels", "readwrite");
 
-                return await channelTx.store.put(
-                  {
-                    broadcaster_id: broadcaster_id,
-                    broadcaster_name: broadcaster_name,
-                    broadcaster_login: broadcaster_login,
-                    followed_at: followed_at,
-                  },
-                  broadcaster_id
-                );
+                const channel:TChannel = (await channelTx.store.get(broadcaster_id))!;
+
+                channel.broadcaster_name = broadcaster_name;
+                channel.broadcaster_login = broadcaster_login;
+                channel.followed_at = followed_at;
+
+                return await channelTx.store.put(channel, broadcaster_id);
               })
           }
         ),
@@ -362,4 +361,99 @@ export class ViewMainHandler extends ViewHandler {
       }
     })
   }
+}
+
+export class ViewGroupHandler extends ViewHandler {
+  listener(): void {
+      addSelfListener(async (e) => {
+        const eventType = e.data.type as GroupPostEvents;
+
+        if (eventType === "remove-channel-from-grpup") {
+          const { channel, group } = e.data.data;
+          group.channels = group.channels.filter((_channelId: BroadcasterId) => 
+            channel.broadcaster_id !== _channelId
+          );
+
+          const tx = DB.userDB!.transaction("Groups", "readwrite");
+
+          tx.store.put(group, group.name);
+
+          const etcGroup = await tx.store.get("etc");
+          etcGroup!.channels.push(channel.broadcaster_id);
+
+          tx.store.put(etcGroup!, "etc");
+          
+          const ctx = DB.userDB!.transaction("Channels", "readwrite");
+          channel.group_id = "etc"
+          ctx.store.put(channel, channel.broadcaster_id);
+
+          const message:WebMessageForm<WorkerPostEvents> = {
+            type: "result-remove-channel-from-group",
+            origin: "worker",
+            data: {
+              channel,
+              group
+            }
+          }
+          sendToMainThread(message);
+        }
+      })
+  }
+}
+
+export class ViewAddChannelsHandler extends ViewHandler {
+  listener(): void {
+    addSelfListener(async (e) => {
+      const eventType = e.data.type as AddChannelsPostEvents;
+
+      if (eventType === "change-channels-group") {
+        const { channels, groupId } = e.data.data;
+        
+        await Promise.all(channels.map(async (channel: TChannel) => {
+          const gtx = DB.userDB!.transaction("Groups", "readwrite");
+
+          const group = await gtx.store.get(channel.group_id)
+          group!.channels = group!.channels.filter((_id) => _id !== channel.broadcaster_id)
+
+          await gtx.store.put(group!, group!.name);
+
+          return gtx.done;
+        }))
+
+        await Promise.all(channels.map(async (channel: TChannel) => {
+          const ctx = DB.userDB!.transaction("Channels", "readwrite");
+
+          channel!.group_id = groupId;
+            
+          await ctx.store.put(channel!, channel.broadcaster_id);
+          
+          return ctx.done
+        }))
+
+        const gtx = DB.userDB!.transaction("Groups", "readwrite");
+        const nextGroup = await gtx.store.get(groupId);
+        channels.forEach((_channel: TChannel) => 
+          nextGroup!.channels.push(_channel.broadcaster_id
+        ));
+
+        await gtx.store.put(nextGroup!, nextGroup!.name);
+
+        const allGroups = await gtx.store.getAll();
+        const ctx = DB.userDB!.transaction("Channels", "readwrite");
+        const allChannels = await ctx.store.getAll()
+
+        const message: WebMessageForm<WorkerPostEvents> = {
+          origin: "worker",
+          type: "result-change-channels-group",
+          data: {
+            groups: allGroups,
+            channels: allChannels
+          }
+        }
+
+        sendToMainThread(message);
+      }
+    })
+  }
+  
 }

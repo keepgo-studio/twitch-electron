@@ -49,6 +49,7 @@ declare global {
     broadcaster_name: string;
     broadcaster_login: string;
     followed_at: string;
+    group_id: GroupId
   }
 
   interface TStream {
@@ -61,7 +62,14 @@ declare global {
     viewer_count: number
   }
 
-  type MessageOrigins =  "worker" | "view-app" | "view-profile" | "viwe-auth" | "view-group" | "view-main";
+  type MessageOrigins =  
+    | "worker" 
+    | "view-app" 
+    | "view-profile" 
+    | "viwe-auth" 
+    | "view-group" 
+    | "view-main"
+    | "view-add-channels";
 
   interface WebMessageForm<T> {
     origin: MessageOrigins,

@@ -13,6 +13,10 @@ type WorkerPostEvents =
   | "result-save-aot"
   | "result-changing-group-name"
   | "result-changing-player-mode"
+  // Group
+  | "result-remove-channel-from-group"
+  // AddChannels
+  | "result-change-channels-group"
   ;
 
 type AppPostEvents =
@@ -39,10 +43,20 @@ type MainPostEvents =
   | "change-player-mode"
   ;
 
+type GroupPostEvents =
+  | "remove-channel-from-grpup"
+  ;
+
+type AddChannelsPostEvents = 
+  | "change-channels-group"
+  ;
+
 export type {
   ProfilePostEvents,
   WorkerPostEvents,
   AuthPostEvents,
   MainPostEvents,
+  AddChannelsPostEvents,
+  GroupPostEvents,
   AppPostEvents
 }

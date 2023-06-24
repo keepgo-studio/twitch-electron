@@ -12,7 +12,7 @@
 // export type { WorkerHandlingEvents };
 
 import DB from "./db";
-import { ViewAppHandler, ViewAuthHandler, ViewMainHandler, ViewProfileHandler } from "./handler";
+import { ViewAddChannelsHandler, ViewAppHandler, ViewAuthHandler, ViewGroupHandler, ViewMainHandler, ViewProfileHandler } from "./handler";
 import { sendToMainThread } from "./utils";
 
 async function main() {
@@ -27,6 +27,10 @@ async function main() {
   new ViewProfileHandler();
 
   new ViewMainHandler();
+
+  new ViewGroupHandler();
+  
+  new ViewAddChannelsHandler();
 
   sendToMainThread({
     origin: "worker",

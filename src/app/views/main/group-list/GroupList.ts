@@ -31,18 +31,22 @@ class GroupList extends LitElement {
   }
 
   render() {
+    const exceptEtc = this.groups!.filter(_group => _group.name !== "etc")
+    const etc = this.groups!.find(_group => _group.name === "etc");
+
     return html`
       <ul>
         <li @click=${this.changeGroup} id="groupd-all">all</li>
 
         ${repeat(
-          this.groups!,
+          exceptEtc!,
           (group) => group.name,
           (group) => html`
             <li @click=${this.changeGroup} id=${`group-${group.name}`}>${group.name}</li>
           `
         )}
 
+        <li @click=${this.changeGroup} id="group-etc">${etc?.name}</li>
         <li @click=${this.fireEvent} class="addNewGroup">add(+)</li>
       </ul>
     `;

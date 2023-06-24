@@ -78,6 +78,20 @@ class Main extends LitElement {
       this.userInfo!.mode = mode;
       this.userInfo = { ...this.userInfo! };
     }
+    // GroupPostEvent results
+    else if (eventType ==="result-remove-channel-from-group") {
+      const { channel, group } = e.data.data;
+
+      const cidx = this.followList?.findIndex(_channel => _channel.broadcaster_id === channel.broadcaster_id);
+
+      const gidx = this.groupList?.findIndex(_group => _group.name === group.name);
+
+      this.followList![cidx!] = channel;
+
+      this.groupList![gidx!] = group;
+      this.followList = [...this.followList!];
+      this.groupList = [...this.groupList!];
+    }
   }
 
   constructor() {
@@ -118,6 +132,12 @@ class Main extends LitElement {
 
   playListener() {
     console.log("open player");
+  }
+  syncListener(e: CustomEvent) {
+    const { channels, groups } = e.detail;
+
+    this.followList = [...channels];
+    this.groupList = [...groups];
   }
 
   async aotListener() {
@@ -195,6 +215,7 @@ class Main extends LitElement {
         <main>
           <view-group
             @play=${this.playListener}
+            @sync=${this.syncListener}
             .group=${findGroup(this._currentGroupId, this.groupList)}
             .channels=${this.followList}
             .liveChannels=${this.streamList}

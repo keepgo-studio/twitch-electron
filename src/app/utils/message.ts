@@ -1,6 +1,8 @@
 import type {
+  AddChannelsPostEvents,
   AppPostEvents,
   AuthPostEvents,
+  GroupPostEvents,
   MainPostEvents,
   ProfilePostEvents,
   WorkerPostEvents,
@@ -8,7 +10,12 @@ import type {
 
 export function sendToWorker(
   form: WebMessageForm<
-    ProfilePostEvents | AppPostEvents | AuthPostEvents | MainPostEvents
+    ProfilePostEvents 
+    | AppPostEvents 
+    | AuthPostEvents 
+    | MainPostEvents 
+    | AddChannelsPostEvents
+    | GroupPostEvents
   >
 ) {
   if (window.worker === undefined)

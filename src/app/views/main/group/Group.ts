@@ -2,16 +2,16 @@ import { LitElement, PropertyValueMap, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 
-import "@views/main/group/channel/Channel";
-import "@views/main/group/add-channels/AddChannels";
+import "./channel/Channel";
+import "./add-channels/AddChannels"
+
+import type { GroupPostEvents } from "@utils/events";
+import { sendToWorker } from "@utils/message";
 
 @customElement("view-group")
 class Group extends LitElement {
   @property({ type: Object })
   group?: TGroup
-  
-  @state()
-  _openAddChannels = false;
   
   @property({ type: Array })
   channels?: Array<TChannel>
@@ -19,10 +19,16 @@ class Group extends LitElement {
   @property({ type: Array })
   liveChannels?: Array<TStream>
 
+  @state()
+  _openAddChannels = false;
+
   
   protected shouldUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): boolean {
     if (this.group === undefined || this.channels === undefined || this.liveChannels === undefined) return false;
     else return true;
+  }
+  protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    if (_changedProperties.has("group")) this._openAddChannels = false;
   }
 
   openPlayer() {
@@ -33,6 +39,27 @@ class Group extends LitElement {
     this._openAddChannels = true;
   }
   
+  play() {
+    this.dispatchEvent(new CustomEvent("play"));
+  }
+
+  removeChannelFromGroup(e: MouseEvent) {
+    const target = e.currentTarget as Element;
+    const id = target.id.split("-")[1];
+
+    const removeChannel = this.channels?.find(_channel => _channel.broadcaster_id === id);
+
+    const message: WebMessageForm<GroupPostEvents> = {
+      origin: "view-group",
+      type: "remove-channel-from-grpup",
+      data: {
+        channel: removeChannel,
+        group: this.group
+      }
+    }
+    sendToWorker(message);
+  }
+
   render() {
     const groupHTML = () => {
       let channels;
@@ -40,7 +67,7 @@ class Group extends LitElement {
       if (this.group!.name === "all")
         channels = [ ...this.channels! ];
       else 
-        channels = this.channels!.filter(_channel => _channel.broadcaster_id in this.group!.channels);
+        channels = this.channels!.filter(_channel => _channel.group_id === this.group?.name);
       
       channels.sort((a, b) => {
         const aLiveInfo = this.liveChannels!.find(_channel => _channel.user_id === a.broadcaster_id);
@@ -63,7 +90,13 @@ class Group extends LitElement {
               return html`
                 <li>
                   ${channel.broadcaster_name}
+                  <button @click=${this.play}>play</button>
                   <p>is live: ${liveInfo && liveInfo.viewer_count}</p>
+                  ${(this.group!.name !== "all" && this.group!.name !== "etc") ?
+                   html`<button 
+                   id=${`btn-${channel.broadcaster_id}`} 
+                   @click=${this.removeChannelFromGroup}
+                   >(X)</button>`: ""}
                 </li>
               `
             })}
@@ -75,11 +108,17 @@ class Group extends LitElement {
       <section>
         ${groupHTML()}
 
-        <div>
-          <button @click=${this.openAddChannelsView}>add new channels</button>
-        </div>
+        ${this.group?.name === "all" ? html``: html`
+          <div>
+            <button @click=${this.openAddChannelsView}>add new channels</button>
+          </div>
+        `}
 
-        ${this._openAddChannels ? html`<view-add-channels></view-add-channels>` : ''}
+        ${this._openAddChannels  ? 
+        html`
+          <view-add-channels .currentGroupId=${this.group?.name} .channels=${this.channels}></view-add-channels>
+        `
+        :""}
       </section>
     `;
   }
