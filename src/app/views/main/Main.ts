@@ -1,10 +1,10 @@
 import { LitElement, PropertyValueMap, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
-import { Confirm, Prompt } from "@views/components/Dialog";
+import { Alert, Prompt } from "@views/components/Dialog";
 
-// import "@views/main/group-list/GroupList"
-// import "@views/main/group/Group"
+import "@views/main/group-list/GroupList"
+import "@views/main/group/Group"
 import "@views/bottom-navbar/BottomNavbar"
 
 import type { MainPostEvents, WorkerPostEvents } from "@utils/events";
@@ -12,6 +12,14 @@ import type { MainPostEvents, WorkerPostEvents } from "@utils/events";
 const findGroup = (groupId: GroupId, groupList?: Array<TGroup>): TGroup | undefined => {
   if (!groupList) return undefined;
   
+  if (groupId === "all") return {
+    channels: [],
+    color: "",
+    created_at: "",
+    name: "all"
+  };
+
+  return groupList.find(_group => _group.name === groupId);
 }
 
 @customElement("view-main")
@@ -36,20 +44,34 @@ class Main extends LitElement {
 
   private _connectedChannels = [];
 
-  mainWorkerLisetener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
+  async mainWorkerLisetener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
     const eventType = e.data.type;
     
-    if (eventType === "result-save-aot") {
+    if (eventType === "result-add-new-group") {
+      const { groupName, allGroups } = e.data.data;
+
+      this.groupList = [ ...allGroups ];
+
+      this._currentGroupId = groupName
+    }
+    else if (eventType === "result-save-aot") {
       const aot = e.data.data;
       this.userInfo!.AOT = aot;
       this.userInfo = { ...this.userInfo! };
     }
     else if (eventType === "result-changing-group-name") {
       const newName = e.data.data;
+
+      if (newName === undefined) {
+        await new Alert("already exist group name").show();
+        return;
+      }
+      
       const idx = this.groupList?.findIndex(group => group.name === this._currentGroupId);
 
       this.groupList![idx!].name = newName;
       this.groupList = [ ...this.groupList! ];
+      this._currentGroupId = newName;
     }
     else if (eventType === "result-changing-player-mode") {
       const mode = e.data.data;
@@ -81,6 +103,19 @@ class Main extends LitElement {
     this._currentGroupId = groupId;
   }
 
+  async addNewGroupListener(e: CustomEvent) {
+    const newName = await new Prompt('Type new group\'s name').show()
+
+    if (newName === undefined) return;
+
+    const message: WebMessageForm<MainPostEvents> = {
+      origin: "view-main",
+      type: "append-new-group",
+      data: newName
+    }
+    sendToWorker(message);
+  }
+
   playListener() {
     console.log("open player");
   }
@@ -103,10 +138,18 @@ class Main extends LitElement {
   }
   async changeGroupNameListener() {
     if (this._currentGroupId === "all") {
-      new Confirm("you cannot change group name for 'all' group");
+      await new Alert("you cannot change group name for 'all' group").show();
       return;
     }
+    else if (this._currentGroupId === "etc") {
+      await new Alert("you cannot change group name for 'etc' group").show();
+      return;
+    }
+
     const newName = await new Prompt('Type changed group name').show()
+
+    if (newName === undefined) return;
+
     const message: WebMessageForm<MainPostEvents> = {
       origin: "view-main",
       type: "change-group-name",
@@ -144,6 +187,7 @@ class Main extends LitElement {
       <section id="main-section">
         Main
         <view-group-list 
+          @addNewGroup=${this.addNewGroupListener}
           @changeGroup=${this.changeGroupListener}
           .groups=${this.groupList}
         ></view-group-list>
@@ -153,6 +197,7 @@ class Main extends LitElement {
             @play=${this.playListener}
             .group=${findGroup(this._currentGroupId, this.groupList)}
             .channels=${this.followList}
+            .liveChannels=${this.streamList}
           ></view-group>
         </main>
 

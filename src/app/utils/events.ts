@@ -8,6 +8,8 @@ type WorkerPostEvents =
   | "return-followed-list"
   | "return-group-list"
   | "return-stream-channels"
+  // MainView
+  | "result-add-new-group"
   | "result-save-aot"
   | "result-changing-group-name"
   | "result-changing-player-mode"
@@ -30,7 +32,8 @@ type AuthPostEvents =
 type ProfilePostEvents = 
   | "get-profiles"
   ;
-type MainPostEvents = 
+type MainPostEvents =
+  | "append-new-group"
   | "save-aot-result"
   | "change-group-name"
   | "change-player-mode"

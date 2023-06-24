@@ -101,7 +101,10 @@ export class Prompt extends DialogCore {
   _promptMsg = '';
 
   @state()
-  _inputText = '';
+  _inputText? = '';
+
+  @state()
+  _errorMessage = '';
 
   @query('#dialog')
   dialog:Element | undefined;
@@ -119,10 +122,15 @@ export class Prompt extends DialogCore {
     if (target.className === 'confirm') {
       this._inputText = this.input!.value;
     } else {
-      this._inputText = '';
+      this._inputText = undefined;
     }
 
-    this._closeDialog = true;
+    if (this._inputText === '') {
+      this._errorMessage = "you cannot confirm empty string"
+    }
+    else {
+      this._closeDialog = true;
+    }
   }
 
   constructor(confirmMsg: string = 'alert') {
@@ -148,10 +156,49 @@ export class Prompt extends DialogCore {
 
           <input type="text" id="text-input" autofocus />
           
+          ${this._errorMessage && html`<h3 class="error">${this._errorMessage}</h3>`}
+
           <div class="button-container">
             <button @click=${this.handleSubmit} class="confirm">Yes</button>
             <button @click=${this.handleSubmit} class="cancel">No</button>
           </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+@customElement('app-alert')
+export class Alert extends DialogCore {
+  @state()
+  _alertMsg = '';
+
+  @query('#dialog')
+  dialog:Element | undefined;
+
+  public returnValue() {
+    return true;
+  }
+
+  private handleSubmit(e: Event) {
+    const target = e.currentTarget as Element;
+
+    this._closeDialog = true;
+  }
+
+  constructor(confirmMsg: string = 'alert') {
+    super();
+
+    this._alertMsg = confirmMsg;
+  }
+
+  render() {
+    return html`
+      <div id="alert">
+        <div class="container">
+          <h1>${this._alertMsg}</h1>
+
+          <button @click=${this.handleSubmit}>Ok</button>
         </div>
       </div>
     `;

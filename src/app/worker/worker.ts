@@ -12,7 +12,7 @@
 // export type { WorkerHandlingEvents };
 
 import DB from "./db";
-import { ViewAppHandler, ViewAuthHandler, ViewProfileHandler } from "./handler";
+import { ViewAppHandler, ViewAuthHandler, ViewMainHandler, ViewProfileHandler } from "./handler";
 import { sendToMainThread } from "./utils";
 
 async function main() {
@@ -25,6 +25,8 @@ async function main() {
   new ViewAuthHandler();
 
   new ViewProfileHandler();
+
+  new ViewMainHandler();
 
   sendToMainThread({
     origin: "worker",

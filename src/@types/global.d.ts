@@ -52,7 +52,6 @@ declare global {
   }
 
   interface TStream {
-    id: string,
     user_id: string,
     user_login: string,
     game_name: string,
