@@ -100,6 +100,8 @@ class AddChannels extends LitElement {
 
     return html`
       <div>
+        current: ${this.currentGroupId}
+        <button @click=${() => this.dispatchEvent(new CustomEvent("close"))}>close</button>
         <ul>
           ${repeat(
             Object.keys(channelPerGroup),

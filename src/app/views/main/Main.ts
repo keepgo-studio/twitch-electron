@@ -36,6 +36,9 @@ class Main extends LitElement {
   @state()
   _currentGroupId: GroupId = "all"
 
+  @state()
+  _playInfo?: TChannel;
+
   // @state()
   // _bottomNavbarData: BottomNavbarDataType
 
@@ -130,9 +133,14 @@ class Main extends LitElement {
     sendToWorker(message);
   }
 
-  playListener() {
-    console.log("open player");
+  playListener(e: CustomEvent) {
+    const channelId = e.detail;
+
+    this._playInfo = this.followList?.find(_channel => _channel.broadcaster_id === channelId);
+
+    if (this._playInfo) window.api.openPlayer(this._playInfo);
   }
+
   syncListener(e: CustomEvent) {
     const { channels, groups } = e.detail;
 
@@ -230,10 +238,6 @@ class Main extends LitElement {
           @openSetting=${this.openSettingListener}
           .userInfo=${this.userInfo}
         ></view-bottom-navbar>
-      </section>
-
-      <section>
-      <!-- Player -->
       </section>
     `;
   }

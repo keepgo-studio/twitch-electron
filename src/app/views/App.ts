@@ -91,6 +91,10 @@ class MainView extends LitElement {
   constructor() {
     super();
 
+    window.api.onFollowEventListener((type, targetId) => {
+      console.log("App", type, targetId);
+    })
+
     addWorkerListener(this.appWorkerListener.bind(this));
 
     this._service = interpret(

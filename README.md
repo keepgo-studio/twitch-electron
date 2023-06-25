@@ -66,3 +66,12 @@ setTimeout(() => {
 그래서 그냥 제한적으로 서비스 제공하자
 
 component간 소통은 필요없다. 그냥 reactive variable와 custom event handler로 핸들링하면 되는데!
+
+
+response body관련
+https://stackoverflow.com/questions/67593519/how-can-i-get-response-body-response-text-in-electron-from-headers
+
+
+<!-- chrome API에서 webRequest를 통해 response body를 가져오는 방법을 아는데
+같은 크로미움 엔진을 쓰는 electron이 이 body를 제공하지 않는다길래 적잖아 당홯하고 시간을 엄청 허비했다 (3~4시간)
+근데... 그냥 type checking무시하고 사용하니 해결됐다 ㅡㅡ -->

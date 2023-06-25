@@ -4,6 +4,10 @@ declare global {
   interface PreloadAPI { 
     openBrowser: (url: string) => {};
 
+    openPlayer: (channel: TChannel) => {};
+
+    onFollowEventListener: (callback:(type: "FollowButton_FollowUser" | "FollowButton_UnfollowUser", targetId: BroadcasterId) => void) => void;
+
     addTwitchAuthLitsener: (callback: (userInfo: TwitchOIDCFromFirebase) => void) => void;
 
     updateWorking: (working: boolean) => {};

@@ -1,8 +1,123 @@
 import * as path from 'path';
 import { Worker } from 'worker_threads';
-import { app, BrowserWindow, ipcMain, shell, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, shell, dialog, session, MessageChannelMain } from "electron";
 
 import type { MessageToMain } from 'server';
+
+interface TwitchGQLResonpse {
+    operationName?: "FollowButton_UnfollowUser" | "FollowButton_FollowUser",
+    variables?: {
+        input?: {
+            targetID?: BroadcasterId
+        }
+    }
+}
+
+function arrayBufferToJson(buffer: ArrayBuffer) {
+    return JSON.parse(String.fromCharCode.apply(null, Array.from(new Uint8Array(buffer))));
+}
+
+
+class PlayerProcess {
+    static win?: BrowserWindow;
+
+    static create() {
+        session.defaultSession.webRequest.onCompleted({
+            urls: [
+                "https://gql.twitch.tv/gql"
+            ]
+        }, (details) => {
+            const { uploadData } = details as any;
+
+            if (uploadData && uploadData[0]?.bytes) {
+                const payloadData = arrayBufferToJson(uploadData[0].bytes)[0] as TwitchGQLResonpse;
+
+                if (payloadData?.operationName === "FollowButton_FollowUser"
+                || payloadData?.operationName === "FollowButton_UnfollowUser") {
+                    AppProcess.win!.webContents.send("follow-event-occur", {
+                        type: payloadData?.operationName,
+                        targetId: payloadData.variables?.input?.targetID
+                    });
+                }
+            }
+        })
+
+        session.defaultSession.webRequest.onBeforeRequest({
+            urls: [
+              'https://embed.twitch.tv/*channel=*',
+            ]
+          }, (details, cb) => {
+
+            var redirectURL = details.url;
+            
+            var params = new URLSearchParams(redirectURL.replace('https://embed.twitch.tv/',''));
+            if (params.get('parent') != '') {
+                cb({});
+                return;
+            }
+            params.set('parent', 'locahost');
+            params.set('referrer', 'https://localhost/');
+        
+            var redirectURL = 'https://embed.twitch.tv/?' + params.toString();
+            // console.log('Adjust to', redirectURL);
+        
+            cb({
+              cancel: false,
+              redirectURL
+            });
+          });
+        
+        session.defaultSession.webRequest.onHeadersReceived({
+            urls: [
+                'https://www.twitch.tv/*',
+                'https://player.twitch.tv/*',
+                'https://embed.twitch.tv/*'
+            ]
+        }, (details, cb) => {
+            var responseHeaders = details.responseHeaders!;
+        
+            // console.log('headers', details.url, responseHeaders);
+        
+            delete responseHeaders['Content-Security-Policy'];
+            // console.log('after', responseHeaders);
+        
+            cb({
+                cancel: false,
+                responseHeaders
+            });
+        });
+        
+        this.win = new BrowserWindow({
+            resizable: true,
+            width: 1000,
+            height: 700,
+            show: false,
+            alwaysOnTop: true
+        });
+
+        this.win!.loadFile(`public/player.html`);
+        this.win.removeMenu();
+
+        this.win.on("close", (e) => {
+            e.preventDefault();
+            this.win!.hide();
+        });
+
+        this.win.webContents.openDevTools({ mode: "detach" })
+    }
+
+    static open() {
+        this.win!.show();
+    }
+
+    static changeChannel(channel: TChannel) {
+        this.win!.loadFile(`public/player.html`, {
+            query: {
+                login: channel.broadcaster_login
+            }
+        });
+    }
+}
 
 class AppProcess {
     static win: BrowserWindow;
@@ -14,7 +129,7 @@ class AppProcess {
             webPreferences: {
                 preload: path.join(__dirname, "app.preload.js")
             },
-            resizable: true,
+            resizable: false,
             width: 370,
             height: 700,
             alwaysOnTop: true
@@ -27,7 +142,10 @@ class AppProcess {
         this.win.removeMenu();
 
         this.win.on("close", (e) => {
-            if (!this.working) return;
+            if (!this.working) {
+                PlayerProcess.win?.destroy();
+                return;
+            }
 
             const confirm = dialog.showMessageBoxSync({
                 type: "question before close",
@@ -39,6 +157,8 @@ class AppProcess {
             if (confirm === 1) {
                 e.preventDefault();
             }
+
+            PlayerProcess.win?.destroy();
         });
 
         // remove when deploy
@@ -57,7 +177,7 @@ class MainProcess {
                 case "sync port":
                     this.opened_port = msg.data.addressInfo!.port;
                     
-                    MainProcess.runApp();
+                    this.runApp();
                     break;
                 
                 case "update user from web":
@@ -73,10 +193,12 @@ class MainProcess {
         // run program
         app.whenReady().then(() => {
             AppProcess.create(this.opened_port);
+            PlayerProcess.create();
 
             app.on("activate", function() {
                 if (BrowserWindow.getAllWindows().length === 0) {
                     AppProcess.create(this.opened_port);
+                    PlayerProcess.create();
                 }
             })
         })
@@ -86,6 +208,10 @@ class MainProcess {
             if (process.platform === "darwin") {
                 app.quit();
             }
+        })
+
+        app.on("before-quit", () => {
+            PlayerProcess.win?.destroy();
         })
     }
 
@@ -98,6 +224,11 @@ class MainProcess {
             AppProcess.win.setAlwaysOnTop(aot);
 
             return true;
+        })
+
+        ipcMain.handle("open-player", (_, channel) => {
+            PlayerProcess.open();   
+            PlayerProcess.changeChannel(channel);
         })
     }
 }

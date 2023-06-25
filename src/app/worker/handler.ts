@@ -90,6 +90,12 @@ export class ViewAppHandler extends ViewHandler {
 
         followList = follow_list;
 
+        /**
+         * TODO: 그냥 받아온 데이터로 새로 갈아치워야함
+         * 단 이미 있는 데이터는 groupId를 유지시켜줘야 함
+         * 새로운 데이터는 etc로 넣어주며 그냥 넣기
+         * 나머지 없는 것들은 삭제
+         */
         await Promise.all(followList.map(
           async ({
             broadcaster_id,

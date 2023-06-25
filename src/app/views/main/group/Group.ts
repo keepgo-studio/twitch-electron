@@ -7,7 +7,9 @@ import "./add-channels/AddChannels"
 
 import type { GroupPostEvents } from "@utils/events";
 import { sendToWorker } from "@utils/message";
-
+/**
+ * TODO: 채널들을 선택해서 옮기고 싶은 그룹을 선택하는 ui 구현 필요
+ */
 @customElement("view-group")
 class Group extends LitElement {
   @property({ type: Object })
@@ -39,8 +41,13 @@ class Group extends LitElement {
     this._openAddChannels = true;
   }
   
-  play() {
-    this.dispatchEvent(new CustomEvent("play"));
+  play(e: MouseEvent) {
+    const target = e.currentTarget as Element;
+    const id = target.id.split("-")[1];
+
+    this.dispatchEvent(new CustomEvent("play", {
+      detail: id
+    }));
   }
 
   removeChannelFromGroup(e: MouseEvent) {
@@ -90,7 +97,7 @@ class Group extends LitElement {
               return html`
                 <li>
                   ${channel.broadcaster_name}
-                  <button @click=${this.play}>play</button>
+                  <button id=${`play-${channel.broadcaster_id}`} @click=${this.play}>play</button>
                   <p>is live: ${liveInfo && liveInfo.viewer_count}</p>
                   ${(this.group!.name !== "all" && this.group!.name !== "etc") ?
                    html`<button 
@@ -116,7 +123,11 @@ class Group extends LitElement {
 
         ${this._openAddChannels  ? 
         html`
-          <view-add-channels .currentGroupId=${this.group?.name} .channels=${this.channels}></view-add-channels>
+          <view-add-channels 
+            @close=${() => this._openAddChannels = false}
+            .currentGroupId=${this.group?.name} 
+            .channels=${this.channels}
+            ></view-add-channels>
         `
         :""}
       </section>
