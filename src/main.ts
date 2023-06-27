@@ -88,6 +88,9 @@ class PlayerProcess {
         });
         
         this.win = new BrowserWindow({
+            webPreferences: {
+                preload: path.join(__dirname, "player.preload.js")
+            },
             resizable: true,
             width: 1000,
             height: 700,
@@ -101,6 +104,7 @@ class PlayerProcess {
         this.win.on("close", (e) => {
             e.preventDefault();
             this.win!.hide();
+            this.win!.webContents.send("hide-window");
         });
 
         this.win.webContents.openDevTools({ mode: "detach" })
@@ -220,8 +224,13 @@ class MainProcess {
             shell.openExternal(`${url}?port=${this.opened_port}`);
         });
 
-        ipcMain.handle("sync-aot", (_, aot) => {
-            AppProcess.win.setAlwaysOnTop(aot);
+        ipcMain.handle("sync-aot", (_, { renderer, aot }) => {
+            if (renderer === "app") {
+                AppProcess.win.setAlwaysOnTop(aot);
+            }
+            else {
+                PlayerProcess.win?.setAlwaysOnTop(aot);
+            }
 
             return true;
         })

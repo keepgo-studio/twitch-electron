@@ -26,7 +26,10 @@ function initAPI() {
       ipcRenderer.invoke("working", working)
     },
   
-    syncAot: async (aot) => await ipcRenderer.invoke("sync-aot", aot)
+    syncAot: async (aot) => await ipcRenderer.invoke("sync-aot", {
+      renderer: "app",
+      aot
+    })
   } as PreloadAPI);
 }
 

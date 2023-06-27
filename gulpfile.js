@@ -46,7 +46,7 @@ gulp.task("watch", () => {
   gulp.watch(["src/**/*.scss", "src/app/**/*.ts"]).on("change", builds.es);
 
   gulp
-    .watch(["src/app.preload.ts"])
+    .watch(["src/app.preload.ts", "src/player.preload.ts"])
     .on("change" , () => exec("tsc -p ./src/tsconfig.json"));
 
   gulp.watch(["src/public/**"]).on("change", builds.public);

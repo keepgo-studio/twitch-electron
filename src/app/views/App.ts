@@ -13,6 +13,7 @@ import type { AppPostEvents, WorkerPostEvents } from "@utils/events";
 
 export const AppTag = "view-app";
 
+
 @customElement("view-app")
 class MainView extends LitElement {
   static styles = css`
@@ -90,10 +91,6 @@ class MainView extends LitElement {
 
   constructor() {
     super();
-
-    window.api.onFollowEventListener((type, targetId) => {
-      console.log("App", type, targetId);
-    })
 
     addWorkerListener(this.appWorkerListener.bind(this));
 

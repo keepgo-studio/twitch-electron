@@ -22,6 +22,8 @@ const findGroup = (groupId: GroupId, groupList?: Array<TGroup>): TGroup | undefi
   return groupList.find(_group => _group.name === groupId);
 }
 
+let deletedChannel: TChannel | undefined = undefined;
+
 @customElement("view-main")
 class Main extends LitElement {
   @property({ type: Array})
@@ -99,6 +101,21 @@ class Main extends LitElement {
 
   constructor() {
     super();
+
+    window.api.onFollowEventListener((type, targetId) => {      
+      if (type === "FollowButton_FollowUser") {
+        this.followList!.push(deletedChannel!);
+      }
+      else if (type === "FollowButton_UnfollowUser") {
+        const index = this.followList!.findIndex(_channel => _channel.broadcaster_id === targetId)!;
+        deletedChannel = this.followList![index];
+        this.followList!.splice(index, 1);
+      }
+
+      this.followList = [...this.followList!];
+      console.log(this.followList);
+    })
+
 
     addWorkerListener(this.mainWorkerLisetener.bind(this));
   }
