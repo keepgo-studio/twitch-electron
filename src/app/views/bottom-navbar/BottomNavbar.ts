@@ -31,7 +31,7 @@ class BottomNavbar extends LitElement {
             <li class="changeGroupeName" @click=${this.fireEvent}><i>Change Group Name</i></li>
             <li class="goHome" @click=${this.fireEvent}><i>go Home</i></li>
             <li class="changeColor" @click=${this.fireEvent}><i>Change Color</i></li>
-            <li class="syncList" @click=${this.fireEvent}><i>Sync List</i></li>
+            <li class="syncFromTwitch" @click=${this.fireEvent}><i>Sync List</i></li>
           </ul>
         </div>
       </nav>

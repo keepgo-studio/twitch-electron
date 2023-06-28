@@ -13,6 +13,7 @@ type WorkerPostEvents =
   | "result-save-aot"
   | "result-changing-group-name"
   | "result-changing-group-color"
+  | "result-sync-twitch-followed-list"
   // Group
   | "result-remove-channel-from-group"
   // AddChannels
@@ -41,6 +42,7 @@ type MainPostEvents =
   | "save-aot-result"
   | "change-group-name"
   | "change-group-color"
+  | "sync-twitch-followed-list"
   ;
 
 type GroupPostEvents =

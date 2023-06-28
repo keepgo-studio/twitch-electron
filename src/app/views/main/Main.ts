@@ -65,7 +65,7 @@ class Main extends LitElement {
       this.userInfo = { ...this.userInfo! };
     }
     else if (eventType === "result-changing-group-name") {
-      const newName = e.data.data;
+      const { newChannels, newName } = e.data.data;
 
       if (newName === undefined) {
         await new Alert("already exist group name").show();
@@ -75,8 +75,10 @@ class Main extends LitElement {
       const idx = this.groupList?.findIndex(group => group.name === this._currentGroupId);
 
       this.groupList![idx!].name = newName;
-      this.groupList = [ ...this.groupList! ];
       this._currentGroupId = newName;
+
+      this.followList = [...newChannels];
+      this.groupList = [ ...this.groupList! ];
     }
     else if (eventType === "result-changing-group-color") {
       const { groupId, color } = e.data.data;
@@ -99,6 +101,13 @@ class Main extends LitElement {
       this.followList = [...this.followList!];
       this.groupList = [...this.groupList!];
     }
+    else if (eventType === "result-sync-twitch-followed-list") {
+      const { syncChannels, syncGroups, syncStreams } = e.data.data;
+
+      this.followList = [...syncChannels];
+      this.groupList = [...syncGroups];
+      this.streamList = [...syncStreams];
+    }
   }
 
   constructor() {
@@ -115,7 +124,6 @@ class Main extends LitElement {
       }
 
       this.followList = [...this.followList!];
-      console.log(this.followList);
     })
 
 
@@ -211,7 +219,10 @@ class Main extends LitElement {
     this._currentGroupId = "all";
   }
   async chagneColorListener() {
-    await new Prompt("color picker").show();
+    if (this._currentGroupId === "all") {
+      await new Alert("color picker").show();
+      return;
+    }
 
     const newColor = "#2139f";
     const message: WebMessageForm<MainPostEvents> = {
@@ -224,8 +235,14 @@ class Main extends LitElement {
     }
     sendToWorker(message);
   }
-  syncListListener() {
-    // TODO: openSetting()
+  syncFromTwitchListener() {
+    const message: WebMessageForm<MainPostEvents> = {
+      origin: "view-app",
+      type: "sync-twitch-followed-list",
+      data: this.userInfo
+    };
+    
+    sendToWorker(message);
   }
 
   disconnectedCallback(): void {
@@ -257,7 +274,7 @@ class Main extends LitElement {
           @changeGroupeName=${this.changeGroupNameListener}
           @goHome=${this.goHomeListener}
           @changeColor=${this.chagneColorListener}
-          @syncList=${this.syncListListener}
+          @syncFromTwitch=${this.syncFromTwitchListener}
           .userInfo=${this.userInfo}
         ></view-bottom-navbar>
       </section>
