@@ -49,7 +49,6 @@ class TwitchAuthView extends LitElement {
     window.api.addTwitchAuthLitsener((oidc) => {
       this._userInfo = {
         AOT: true,
-        mode: "player",
         access_token: oidc.access_token,
         current_user_id: oidc.current_user_id,
         username: oidc.username

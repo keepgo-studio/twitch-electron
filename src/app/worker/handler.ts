@@ -89,56 +89,33 @@ export class ViewAppHandler extends ViewHandler {
         .catch(() => { follow_list: [] })
 
         followList = follow_list;
+        
+        const channelsGetTx = DB.userDB!.transaction("Channels", "readonly");
+        
+        const channels = await channelsGetTx.store.getAll();
+        
+        const newChannels: Array<TChannel> = followList.map(_channel => {
+          const findChannel = channels!.find(_ch => _ch.broadcaster_id === _channel.broadcaster_id);
 
-        /**
-         * TODO: 그냥 받아온 데이터로 새로 갈아치워야함
-         * 단 이미 있는 데이터는 groupId를 유지시켜줘야 함
-         * 새로운 데이터는 etc로 넣어주며 그냥 넣기
-         * 나머지 없는 것들은 삭제
-         */
-        await Promise.all(followList.map(
-          async ({
-            broadcaster_id,
-            broadcaster_name,
-            broadcaster_login,
-            followed_at,
-          }: TwitchChannelData) => {
-            const tx = DB.userDB!.transaction("Channels", "readwrite");
+          if (findChannel === undefined) return {
+            broadcaster_id: _channel.broadcaster_id,
+            broadcaster_login: _channel.broadcaster_login,
+            broadcaster_name: _channel.broadcaster_name,
+            followed_at: _channel.followed_at,
+            group_id: "etc"
+          } as TChannel;
 
-            return await tx.store
-              .add(
-                {
-                  broadcaster_id: broadcaster_id,
-                  broadcaster_name: broadcaster_name,
-                  broadcaster_login: broadcaster_login,
-                  followed_at: followed_at,
-                  group_id: "etc"
-                },
-                broadcaster_id
-              )
-              .then(async (result) => {
-                const groupTx = DB.userDB!.transaction("Groups", "readwrite");
+          return findChannel;
+        })
 
-                const etcGroup = (await groupTx.store.get("etc"))!;
+        const removeTx = DB.userDB!.transaction("Channels", "readwrite");
+        await removeTx.store.clear();
+        
+        await Promise.all(newChannels.map(_channel => {
+          const tx = DB.userDB!.transaction("Channels", "readwrite");
 
-                etcGroup.channels.push(result);
-
-                return await groupTx.store.put(etcGroup, "etc");
-              })
-              .catch(async (err) => {
-                const channelTx = DB.userDB!.transaction("Channels", "readwrite");
-
-                const channel:TChannel = (await channelTx.store.get(broadcaster_id))!;
-
-                channel.broadcaster_name = broadcaster_name;
-                channel.broadcaster_login = broadcaster_login;
-                channel.followed_at = followed_at;
-
-                return await channelTx.store.put(channel, broadcaster_id);
-              })
-          }
-        ),
-      );
+          tx.store.add(_channel, _channel.broadcaster_id);
+        }));
 
       const completeMessage: WebMessageForm<WorkerPostEvents> = {
         origin: "worker",
@@ -349,19 +326,21 @@ export class ViewMainHandler extends ViewHandler {
         }
         sendToMainThread(message);
       }
-      else if (eventType === "change-player-mode") {
-        const tx = DB.userDB!.transaction("UserInfo", "readwrite");
-        const changeMode = e.data.data;
+      else if (eventType === "change-group-color") {
+        const tx = DB.userDB!.transaction("Groups", "readwrite");
+        const { groupId, color } = e.data.data;
 
-        const userInfo: TUserInfo = (await tx.store.get("root"))!;
+        const group: TGroup = (await tx.store.get(groupId))!;
+        group.color = color;
         
-        userInfo.mode = changeMode;
-        
-        await tx.store.put(userInfo, "root");
+        await tx.store.put(group, groupId);
         const message:WebMessageForm<WorkerPostEvents> = {
           origin: "worker",
-          type: "result-changing-player-mode",
-          data: changeMode
+          type: "result-changing-group-color",
+          data: {
+            groupId,
+            color
+          }
         }
         sendToMainThread(message);
       }

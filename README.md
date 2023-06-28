@@ -75,3 +75,18 @@ https://stackoverflow.com/questions/67593519/how-can-i-get-response-body-respons
 <!-- chrome API에서 webRequest를 통해 response body를 가져오는 방법을 아는데
 같은 크로미움 엔진을 쓰는 electron이 이 body를 제공하지 않는다길래 적잖아 당홯하고 시간을 엄청 허비했다 (3~4시간)
 근데... 그냥 type checking무시하고 사용하니 해결됐다 ㅡㅡ --> -->
+
+
+## Naming rules
+
+components which are used as view => 
+
+```js
+@customElement("view-*");
+```
+
+components which are used as reusable components => 
+
+```js
+  @customElemtn("app-*")
+```

@@ -54,7 +54,6 @@ export default class DB {
             access_token: undefined,
             current_user_id: undefined,
             username: undefined,
-            mode: "player",
             AOT: true
           },
           "root"

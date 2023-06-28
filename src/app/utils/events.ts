@@ -12,7 +12,7 @@ type WorkerPostEvents =
   | "result-add-new-group"
   | "result-save-aot"
   | "result-changing-group-name"
-  | "result-changing-player-mode"
+  | "result-changing-group-color"
   // Group
   | "result-remove-channel-from-group"
   // AddChannels
@@ -40,7 +40,7 @@ type MainPostEvents =
   | "append-new-group"
   | "save-aot-result"
   | "change-group-name"
-  | "change-player-mode"
+  | "change-group-color"
   ;
 
 type GroupPostEvents =

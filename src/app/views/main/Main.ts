@@ -78,10 +78,12 @@ class Main extends LitElement {
       this.groupList = [ ...this.groupList! ];
       this._currentGroupId = newName;
     }
-    else if (eventType === "result-changing-player-mode") {
-      const mode = e.data.data;
-      this.userInfo!.mode = mode;
-      this.userInfo = { ...this.userInfo! };
+    else if (eventType === "result-changing-group-color") {
+      const { groupId, color } = e.data.data;
+      const group = this.groupList?.find(_group => _group.name === groupId);
+
+      group!.color = color;
+      this.groupList = [...this.groupList!];
     }
     // GroupPostEvent results
     else if (eventType ==="result-remove-channel-from-group") {
@@ -208,18 +210,21 @@ class Main extends LitElement {
   goHomeListener() {
     this._currentGroupId = "all";
   }
-  chagneModeListener() {
-    const currentMode = this.userInfo!.mode;
-    const changeMode = currentMode === "detach" ? "player" : "detach";
+  async chagneColorListener() {
+    await new Prompt("color picker").show();
 
+    const newColor = "#2139f";
     const message: WebMessageForm<MainPostEvents> = {
       origin: "view-main",
-      type: "change-player-mode",
-      data: changeMode
+      type: "change-group-color",
+      data: {
+        groupId: this._currentGroupId,
+        color: newColor
+      }
     }
     sendToWorker(message);
   }
-  openSettingListener() {
+  syncListListener() {
     // TODO: openSetting()
   }
 
@@ -251,8 +256,8 @@ class Main extends LitElement {
           @aot=${this.aotListener}
           @changeGroupeName=${this.changeGroupNameListener}
           @goHome=${this.goHomeListener}
-          @changeMode=${this.chagneModeListener}
-          @openSetting=${this.openSettingListener}
+          @changeColor=${this.chagneColorListener}
+          @syncList=${this.syncListListener}
           .userInfo=${this.userInfo}
         ></view-bottom-navbar>
       </section>

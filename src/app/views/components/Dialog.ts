@@ -204,3 +204,10 @@ export class Alert extends DialogCore {
     `;
   }
 }
+
+@customElement("app-color-picker")
+export class ColorPicker extends DialogCore {
+  public returnValue() {
+    
+  }
+}
