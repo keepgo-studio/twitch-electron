@@ -31,6 +31,8 @@ declare global {
 
   interface TProfile {
     username: string;
+    profile_image_url: string;
+    offline_image_url: string;
   }
 
   interface TUserInfo {

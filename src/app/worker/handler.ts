@@ -234,10 +234,35 @@ export class ViewAppHandler extends ViewHandler {
 }
 
 export class ViewAuthHandler extends ViewHandler {
-  saveUserProfile(username: string) {
+  async saveUserProfile(userInfo: TUserInfo) {
+    const twitchUserInfo:{
+      id: BroadcasterId;
+      profile_image_url: string;
+      offline_image_url: string;
+    } = await fetch(
+      `${FBASE_FUNCTION_URL}/getUserInfo`,
+      {
+        method: "GET",
+        headers: {
+          access_token: userInfo.access_token,
+          current_user_id: userInfo.current_user_id,
+        } as any,
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => data["user_info"].data[0])
+      .catch(() => ({
+        offline_image_url: "",
+        profile_image_url: ""
+      }));
+    
     const tx = DB.profileDB?.transaction("Profiles", "readwrite");
 
-    tx?.store.put({ username }, username);
+    tx?.store.put({ 
+      username: userInfo.username!,
+      offline_image_url: twitchUserInfo.offline_image_url,
+      profile_image_url: twitchUserInfo.profile_image_url
+    }, userInfo.username);
   }
 
   listener(): void {
@@ -245,10 +270,10 @@ export class ViewAuthHandler extends ViewHandler {
       const eventType = e.data.type as AuthPostEvents;
 
       if (eventType === "open-user-db-to-worker") {
-        const name = e.data.data;
-        this.saveUserProfile(name);
+        const userInfo:TUserInfo = e.data.data;
+        this.saveUserProfile(userInfo);
 
-        await DB.openUserDB(name);
+        await DB.openUserDB(userInfo.username);
 
         const message: WebMessageForm<WorkerPostEvents> = {
           origin: "worker",

@@ -106,8 +106,6 @@ class PlayerProcess {
             this.win!.hide();
             this.win!.webContents.send("hide-window");
         });
-
-        this.win.webContents.openDevTools({ mode: "detach" })
     }
 
     static open() {

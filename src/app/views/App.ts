@@ -3,6 +3,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { Interpreter, interpret, sendTo } from "xstate";
 import { APP_CHILD_ID, AppMachine, FbaseAuthEvents } from "@state/App.state";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
+import { Expo, gsap } from "gsap";
 
 import "@views/profile/Profile";
 import "@views/skeleton/Skeleton";
@@ -17,12 +18,25 @@ export const AppTag = "view-app";
 @customElement("view-app")
 class MainView extends LitElement {
   static styles = css`
+    main {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
     main * {
-      display: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      z-index: 0;
+      opacity: 0;
     }
 
     main .show {
-      display: block;
+      z-index: 1;
+      opacity: 1;
     }
   `;
 
@@ -101,7 +115,16 @@ class MainView extends LitElement {
             this.ViewProfile.classList.add("show");
           },
           "remove profile view": () => {
-            this.ViewProfile.classList.remove("show");
+            gsap.timeline()
+            .to(this.ViewProfile, {
+              x: "100vw",
+              ease: Expo.easeOut,
+              duration: 1,
+              delay: 0.5,
+              onComplete:() => this.ViewProfile.classList.remove("show")
+            });
+
+            this.ViewProfile.setAttribute("loading", "false");
           },
           "get choosed user info from worker": (_, event) => {
             /**
@@ -165,6 +188,9 @@ class MainView extends LitElement {
           },
           "create ui": () => {
             this.ViewMain.classList.add("show");
+          },
+          "remove ui": () => {
+            this.ViewMain.classList.remove("show");
           },
           "get saved data": () => {
             const messageChannel: WebMessageForm<AppPostEvents> = {

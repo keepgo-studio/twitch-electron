@@ -36,6 +36,7 @@
     "webpack-stream": "^7.0.0"
   },
   "dependencies": {
+    "gsap": "^3.12.2",
     "idb": "^7.1.1",
     "lit": "^2.7.4",
     "xstate": "^4.34.0"

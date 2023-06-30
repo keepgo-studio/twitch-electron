@@ -48,7 +48,7 @@ abstract class DialogCore extends LitElement {
 
 }
 
-@customElement('app-confirm')
+@customElement('component-confirm')
 export class Confirm extends DialogCore {
   @state()
   _confirmMsg = '';
@@ -95,7 +95,7 @@ export class Confirm extends DialogCore {
   }
 }
 
-@customElement('app-prompt')
+@customElement('component-prompt')
 export class Prompt extends DialogCore {
   @state()
   _promptMsg = '';
@@ -168,7 +168,7 @@ export class Prompt extends DialogCore {
   }
 }
 
-@customElement('app-alert')
+@customElement('component-alert')
 export class Alert extends DialogCore {
   @state()
   _alertMsg = '';
@@ -205,7 +205,7 @@ export class Alert extends DialogCore {
   }
 }
 
-@customElement("app-color-picker")
+@customElement("component-color-picker")
 export class ColorPicker extends DialogCore {
   public returnValue() {
     

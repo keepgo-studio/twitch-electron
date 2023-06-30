@@ -59,7 +59,7 @@ class TwitchAuthView extends LitElement {
       const messageOpenDB: WebMessageForm<AuthPostEvents> = {
         origin: "viwe-auth",
         type: "open-user-db-to-worker",
-        data: this._name
+        data: this._userInfo
       }
       sendToWorker(messageOpenDB);
     })

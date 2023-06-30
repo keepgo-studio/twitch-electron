@@ -89,6 +89,6 @@ components which are used as view =>
 components which are used as reusable components => 
 
 ```js
-  @customElemtn("app-*")
+  @customElemtn("component-*")
 ```
 

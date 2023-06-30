@@ -85,6 +85,7 @@ export type AppEvents =
 | { type: 'done.invoke.fbaseauth', data: { userInfo: TUserInfo } }
 | { type: "connection" }
 | { type: "first complete" }
+| { type: "back to profile"}
 | { type: "close" };
 
 /**
@@ -96,7 +97,7 @@ export type AppEvents =
  * 이유는 그렇게 json 데이터가 크지 않을거 같음 (나중에 생각)
  */
 export const AppMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EAdgAcARgwA2AKwyATE3EBOVQBZJUjQBoQAT0SSZo2RoDMi1eKWTRFx4oC+z-Wkw58RUhRr0GSTYkEE5uXn5BEQQJaXklFXUtHX0jBAsZJlkFCyZFOVVTcVFVV3d0DAAzACNkWDAAQQBXbAALQgh+MAxaSgA3cm6aurBkFtbmYI4uHj4BEOjJbWkJVSY5FRkLDVE5UVTjUWkmE6ZJDRkTRUULOTKQDyra+ua2wgBjfkowd4jKScEYVmkQWxjOFgw+Qke2K4iYDgsBwQUgwGxOVi2ii28PujwANiQoDAIHRKIRKrQ8DhqJ8ALaoPFgbBgAEhIF-KLGLbSVSiGQaDRqawlbRI5SKDDnKw7XJKfnFXEVWgQRkfAn1VnTcJzTkIcVyWRnDbiXL2JgyMWKDQYWw2W63JYyVQWRWYADuyB4hCa9TwNNaJC4kE1oRmHNBevEEqYF2KikkTAsDhkWzFMdkkjtGjk4jk1zyd3ulBIEDggg8gLDOojAFoLYZEDWDeoW622y63A8Kl4CJXtSDQNEBRD4vGJJc1CakcsM3abs6nBoXJ3HsMXuM+8D5oOwZIDYLLKJRCpzuIo9OoxhsxYTOJBTn1HINK6MASiZBSZvwzuEJILOoMFELEBWUFQFHOC9xBtJ0pFyDRCiYVRC3KTBlUZL9qx-ewbAwRM1HkGwLkzes0m0KDbRNZRcz3RxxBfZk8FpXpkGZDCB2ERB40UMwlyQ3YTi2ApxEta0ll5Gxbz2ICOxQjAPR4Njtw4hAl2nGQoMuGx4yQqNBXOVxXCAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EANgAcATgxNRAJgCsc8QEZJTBSoDMWgDQgAnoi0B2aSbmiFAFiYrrW8QtEmTAXzf60mHPiKkKGnoGFTYkEE5uXn5BEQQVOQcMBIUmORNreXEXfSMERzkMOSYtJklUrRVxLQVJDy90DAAzACNkWDAAQQBXbAALQgh+MAxaSgA3chHW9rBkXr7mMI4uHj4BcLi5SxkTVSYTbVFRLXSFXMRVDGtJW-FrcTSS4+t6kG9mto6e-sIwPDwJDwGFQABtkNgmkCALafWbzfpLQSRNYxTaIbaiXb7Q5aY6nEznQwY0QqIolBIacRySROY5vD4zb4LQgAY34lDArOilCR4RRPNiiGs1gwri01mK6WpTCeoguCEU4gwpgqChM8gUWoyDMaoJIUBgEDolEITVoeBw1HZ0LBYGwYD5Kyi6yF8RMZXJlTueNSkoVEqYMlq4hMplDezqnnejVoEFBYDZ+o6Toiq0F6MVKhKYpKNOqIdpemJ+WsChkeIcCkc92yLl1mDjCcIbVZZGopGoqEB5oTqYFrszKg90mK3qLViY-pLKhsGGykg1J0s9ge4gbGAA7sgeIRuh08Na+iQuJB++nB6A4hJpLJFMo1BptMW8mcMKTFycy8pxE4PNHKBICA4EEbxkQvNEr0QABaLQiksdVFzkYdbjMac8mgrFZVlB5Mg0URZBqDdfAIcCXUg4REHUcsUg0Wx0lnEoA0yL0yj2SoCTLDcmS6BYyNRDYoIQawTADWoVQfBJQxUYd1Q3fVDUgE1+IzIT7A1DBykqMxtjYpQAx2PZRDLB5V0JFQNybMAVMvSj4lDLF7AOGlyiJPJSlvSsFGqFcdHXaMPgdPBoTGCFrP5CDBLs3Ty2rbRF1lJw1GsZjRWUYzREkSUtEkKoFA3bceBsii4hFUU7GcMs0MkbY5AVOQ8VzSo71cssp3-NwgA */
   id: "app",
 
   predictableActionArguments: true,
@@ -111,8 +112,6 @@ export const AppMachine = createMachine({
 
   states: {
     start: {
-      entry: ["get choosed user info from worker"],
-
       on: {
         "token is": [{
           target: "fbaseAuth",
@@ -122,17 +121,23 @@ export const AppMachine = createMachine({
           target: "logged in",
           cond: "valid"
         }]
-      }
+      },
+
+      entry: "get choosed user info from worker",
+      exit: "remove profile view"
     },
 
     fbaseAuth: {
       invoke: {
         id: APP_CHILD_ID,
         src: FbaseAuthMachine,
+
         onDone: {
           target: "logged in",
           actions: ["remove fbase auth view", "get user info from auth"]
         },
+
+        onError: "wait"
       },
 
       on: {
@@ -157,10 +162,12 @@ export const AppMachine = createMachine({
 
     idle: {
       on: {
-        close: "terminate"
+        close: "terminate",
+        "back to profile": "wait"
       },
 
-      entry: ["remove skeleton", "create ui"]
+      entry: ["remove skeleton", "create ui"],
+      exit: "remove ui"
     },
 
     terminate: {
@@ -172,8 +179,7 @@ export const AppMachine = createMachine({
         "user choosed": "start"
       },
 
-      entry: ["create profile view"],
-      exit: "remove profile view"
+      entry: ["create profile view"]
     }
   },
   initial: "wait"

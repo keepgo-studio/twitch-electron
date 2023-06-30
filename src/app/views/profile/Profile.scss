@@ -1,0 +1,103 @@
+@import "/src/app/utils/shared.scss";
+
+:host {
+  width: 100%;
+  height: 100%;
+}
+
+#profile {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  background-color: $black-ops;
+  display: grid;
+  grid-template-rows: 25% 55% auto;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100px;
+  }
+}
+
+.profile-list {
+  padding: 16px;
+  background-color: $rock;
+  opacity: 0;
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    width: 12px;
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+      background-color: $twitch-purple;
+      border-radius: 999px;
+      background-clip: padding-box;
+      border: 3px solid transparent;
+  }
+  &::-webkit-scrollbar-track {
+      background-color: $rock;
+      border-radius: 999px;
+      box-shadow: inset 0px 0px 5px $rock;
+  }
+
+  li {
+    color: $gray;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    background-color: $black-ops;
+    padding: 14px 16px;
+    transition: ease $duration;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+
+    p {
+      width: 100%;
+    }
+
+    img {
+      border: 1px solid $twitch-purple;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      margin-right: 20px;
+    }
+
+    &:hover {
+      background-color: $twitch-purple;
+      color: $white;
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 16px;
+    }
+
+    component-loading {
+      width: 100%;
+      height: 40px;
+    }
+  }
+}
+
+.new-btn {
+  background-color: $twitch-purple;
+  height: fit-content;
+  padding: 18px; 
+  align-self: end;
+  cursor: pointer;
+  transition: ease $duration;
+  opacity: 0;
+
+  &:hover {
+    filter: brightness(70%);
+  }
+  
+  img {
+    width: 100px;
+  }
+}
