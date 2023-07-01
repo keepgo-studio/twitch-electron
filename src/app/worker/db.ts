@@ -46,6 +46,8 @@ export default class DB {
   }
 
   static async openUserDB(userName?: string) {
+    userName = userName?.replace(/\s/g, "");
+    
     this.userDB = await openDB<PlayerIDB>(`${userName}-${IDB_NAME}`, 1, {
       upgrade(_db) {
         const userStore = _db.createObjectStore("UserInfo");

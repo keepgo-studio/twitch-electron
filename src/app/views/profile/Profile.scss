@@ -82,6 +82,16 @@
       height: 40px;
     }
   }
+
+  .no-profile {
+    display: 100%;
+    height: 100%;
+    color: $gray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
 }
 
 .new-btn {

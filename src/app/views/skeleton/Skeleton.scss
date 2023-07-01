@@ -1,0 +1,164 @@
+@import "/src/app/utils/shared.scss";
+
+#skeleton {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  filter: brightness(0.55);
+}
+
+header {
+  width: 100%;
+  height: 14px;
+  background-color: $black;
+  position: relative;
+
+  opacity: 0;
+
+  div {
+    position: absolute;
+    top:0;
+    left: 50%;
+    transform:translateX(-50%);
+    background-color: $black;
+    height: 34px;
+    width: 110px;
+    border-radius: 0 0 15px 15px;
+  }
+}
+
+.body {
+  height: 100%;
+  padding: 30px;
+  display: grid;
+  grid-auto-rows: 20% 1fr;
+
+  .group-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 30px;
+
+    h3 {
+      color: $gray;
+      font-size: 16px;
+      margin-bottom: 0.5em;
+    }
+
+    .group-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: $white;
+  
+      .group-name-box {
+        width: 110px;
+        height: 26px;
+        // background-color: $gray;
+        background: linear-gradient(270deg, $gray 0%, rgba(255, 255, 255, 0.30) 27.08%, $gray 100%);
+        border-radius: 6px;
+      }
+  
+      .channel-info-container {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+
+        .channels-box {
+          width: 62px;
+          height: 13px;
+          // background-color: $twitch-purple;
+          background: linear-gradient(270deg, $twitch-purple 0%, rgba(199, 160, 255, 0.90) 50%, $twitch-purple 100%);
+          border-radius: 6px;
+          margin-bottom: 6px;
+        }
+  
+        .live-box {
+          width: 66px;
+          height: 13px;
+          // background-color: $zero;
+          background: linear-gradient(270deg, $zero 0%, rgba(129, 171, 255, 0.9) 50%, $zero 100%);
+          border-radius: 6px;
+        }
+      }
+    }
+  }
+
+  ul {
+    padding: 14px;
+    background-color: $rock;
+
+    li {
+      background-color: $black-ops;
+      display: grid;
+      grid-template-columns: 58px 1fr 46px;
+      align-items: center;
+      margin-bottom: 14px;
+      height: 78px;
+
+      opacity: 0;
+
+      .thumnbnail-icon {
+        justify-self: center;
+        align-self: center;
+
+        i {
+          display: block;
+          width: 35px;
+          height: 35px;
+          background-color: $light-gray;
+          border-radius: 50%;
+        }
+      }
+      .chennel-name-box {
+        width: 100px;
+        height: 17px;
+        // background-color: $gray;
+        background: linear-gradient(270deg, $gray 0%, rgba(255, 255, 255, 0.50) 50%, $gray 100%);
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+      .viewer-count-box {
+        width: 60px;
+        height: 10px;
+        // background-color: $light-gray;
+        background: linear-gradient(270deg, $light-gray 0%, rgba(242, 242, 242, 0.53) 50%, $light-gray 100%);
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+
+      .play-icon {
+        justify-self: center;
+        align-self: center;
+      }
+    }
+  }
+}
+
+footer {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+
+  .box {
+    width: 140px;
+    height: 6px;
+    background-color: $white;
+    border-radius: 999px;
+  }
+}
+
+
+.linear-effect {
+  background-size: 200% 200% !important;
+  animation: Animation 2s ease-in-out infinite alternate;
+}
+@keyframes Animation { 
+  0%{background-position:10% 0%}
+  100%{background-position:91% 100%}
+}

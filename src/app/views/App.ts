@@ -1,9 +1,9 @@
-import { LitElement, html, css, PropertyValueMap } from "lit";
+import { LitElement, html, css, PropertyValueMap, unsafeCSS } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
 import { Interpreter, interpret, sendTo } from "xstate";
 import { APP_CHILD_ID, AppMachine, FbaseAuthEvents } from "@state/App.state";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
-import { Expo, gsap } from "gsap";
+import { Elastic, Expo, gsap } from "gsap";
 
 import "@views/profile/Profile";
 import "@views/skeleton/Skeleton";
@@ -12,40 +12,52 @@ import "@views/auth/TwitchAuth";
 
 import type { AppPostEvents, WorkerPostEvents } from "@utils/events";
 
+import styles from "./App.scss";
+
 export const AppTag = "view-app";
 
 
+const createAnimation = (elem: Element) => {
+  elem.classList.add("show");
+
+  gsap.timeline()
+    .set(elem, {
+      display: "block"
+    })
+    .to(elem, {
+      ease: Expo.easeOut,
+      opacity: 1,
+      duration: 1,
+      delay: 1,
+      onComplete: () => {
+        elem.dispatchEvent(new CustomEvent("show-page"))
+      }
+    });
+}
+const removeAnimation = (elem: Element) => {
+  gsap.timeline()
+    .to(elem, {
+      x: "100vw",
+      ease: Expo.easeOut,
+      duration: 1,
+      delay: 0.5,
+      onComplete:() => elem.classList.remove("show")
+    })
+    .set(elem, {
+      display: "none"
+    });
+}
+
 @customElement("view-app")
 class MainView extends LitElement {
-  static styles = css`
-    main {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      overflow: hidden;
-    }
-    main * {
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      z-index: 0;
-      opacity: 0;
-    }
-
-    main .show {
-      z-index: 1;
-      opacity: 1;
-    }
-  `;
+  static styles = unsafeCSS(styles);
 
   private _service;
 
   @state()
   _state;
   @state()
-  _choosedUsername: string
+  _choosedProfile: TProfile
   @state()
   _userInfo?: TUserInfo;
   @state()
@@ -58,16 +70,16 @@ class MainView extends LitElement {
   _streamList?: Array<TStream>
   
   @query("view-profile")
-  ViewProfile: Element;
+  ViewProfile: HTMLElement;
 
   @query("view-skeleton")
-  ViewSkeleton: Element;
+  ViewSkeleton: HTMLElement;
 
   @query("view-main")
-  ViewMain: Element;
+  ViewMain: HTMLElement;
 
   @query("view-twitch-auth")
-  ViewTwitchAuth: Element;
+  ViewTwitchAuth: HTMLElement;
 
   appWorkerListener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
     if (e.data.type === "return-userinfo") {
@@ -112,40 +124,36 @@ class MainView extends LitElement {
       AppMachine.withConfig({
         actions: {
           "create profile view": () => {
-            this.ViewProfile.classList.add("show");
+            createAnimation(this.ViewProfile);
           },
           "remove profile view": () => {
-            gsap.timeline()
-            .to(this.ViewProfile, {
-              x: "100vw",
-              ease: Expo.easeOut,
-              duration: 1,
-              delay: 0.5,
-              onComplete:() => this.ViewProfile.classList.remove("show")
-            });
-
+            removeAnimation(this.ViewProfile);
             this.ViewProfile.setAttribute("loading", "false");
           },
           "get choosed user info from worker": (_, event) => {
             /**
-             * if 
-             * 1. any profiles are stored in app
-             * 2. add new user
-             * then it will return undefined
+             * 1. add new user->it will return undefined
+             * 2. any profiles are stored in app
              */
-            if (event.name === undefined) {
+            if (event.profile === undefined) {
+              this._choosedProfile = {
+                offline_image_url: "",
+                profile_image_url: "public/account_circle.png",
+                username: "undefined--adding-new-user"
+              };
+
               this._service.send({
                 type: "token is",
                 isValid: false
               })
             }
             else {
-              this._choosedUsername = event.name;
+              this._choosedProfile = { ...event.profile };
               
               const message: WebMessageForm<AppPostEvents> = {
                 type: "get-userinfo-by-name",
                 origin: "view-app",
-                data: event.name
+                data: event.profile.username
               };
 
               sendToWorker(message);
@@ -165,16 +173,17 @@ class MainView extends LitElement {
             sendToWorker(message);
           },
           "create skeleton": () => {
-            this.ViewSkeleton.classList.add("show");
+            createAnimation(this.ViewSkeleton)
           },
           "remove skeleton": () => {
             this.ViewSkeleton.classList.remove("show");
+            this.ViewSkeleton.style.display = "none"
           },
           "create fbase auth view": () => {
-            this.ViewTwitchAuth.classList.add("show");
+            createAnimation(this.ViewTwitchAuth);
           },
           "remove fbase auth view": () => {
-            this.ViewTwitchAuth.classList.remove("show");
+            removeAnimation(this.ViewTwitchAuth)
           },
           "send connected": sendTo(APP_CHILD_ID, "check connection"),
           "sync followed list": () => {
@@ -187,10 +196,10 @@ class MainView extends LitElement {
             sendToWorker(message);
           },
           "create ui": () => {
-            this.ViewMain.classList.add("show");
+            createAnimation(this.ViewMain);
           },
           "remove ui": () => {
-            this.ViewMain.classList.remove("show");
+            removeAnimation(this.ViewMain);
           },
           "get saved data": () => {
             const messageChannel: WebMessageForm<AppPostEvents> = {
@@ -245,7 +254,7 @@ class MainView extends LitElement {
           .authService=${this._state.children
             ? this._state.children[APP_CHILD_ID] as Interpreter<any, any, FbaseAuthEvents>
             : undefined}
-          .username=${this._choosedUsername}
+          .profile=${this._choosedProfile}
         ></view-twitch-auth>
 
         <view-main

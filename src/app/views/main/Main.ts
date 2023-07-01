@@ -1,4 +1,4 @@
-import { LitElement, PropertyValueMap, html } from "lit";
+import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 import { Alert, Prompt } from "@views/components/Dialog";
@@ -8,6 +8,8 @@ import "@views/main/group/Group"
 import "@views/bottom-navbar/BottomNavbar"
 
 import type { MainPostEvents, WorkerPostEvents } from "@utils/events";
+
+import styles from "./Main.scss";
 
 const findGroup = (groupId: GroupId, groupList?: Array<TGroup>): TGroup | undefined => {
   if (!groupList) return undefined;
@@ -26,6 +28,8 @@ let deletedChannel: TChannel | undefined = undefined;
 
 @customElement("view-main")
 class Main extends LitElement {
+  static styles = unsafeCSS(styles);
+
   @property({ type: Array})
   followList?: Array<TChannel>
   @property({ type: Array})
@@ -252,7 +256,6 @@ class Main extends LitElement {
   render() {
     return html`
       <section id="main-section">
-        Main
         <view-group-list 
           @addNewGroup=${this.addNewGroupListener}
           @changeGroup=${this.changeGroupListener}

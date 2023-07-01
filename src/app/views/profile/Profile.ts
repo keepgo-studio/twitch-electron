@@ -62,6 +62,12 @@ class Profile extends LitElement {
 
       gsap
         .timeline()
+        .set(this.profileList, {
+          pointerEvents: "none"
+        })
+        .set(this.newBtn, {
+          pointerEvents: "none"
+        })
         .set(this.logo, {
           position: "absolute",
           xPercent: -50,
@@ -93,6 +99,7 @@ class Profile extends LitElement {
             opacity: 1,
             duration: 1.5,
             ease: Expo.easeOut,
+            pointerEvents: ""
           },
           "-=0.3"
         )
@@ -102,9 +109,10 @@ class Profile extends LitElement {
             opacity: 1,
             duration: 1.5,
             ease: Expo.easeOut,
+            pointerEvents: ""
           },
           "-=1.5"
-        );
+        )
     };
 
     animation();
@@ -115,18 +123,19 @@ class Profile extends LitElement {
 
     this.loading = true;
 
-    const name = (e.currentTarget as Element).textContent!;
+    const name = (e.currentTarget as Element).textContent!.replace(/\s/g,"");
+    const choosedProfile = this.profiles.find(_profile => _profile.username === name);
 
     this.appService?.send({
       type: "user choosed",
-      name,
+      profile: choosedProfile,
     });
   }
 
   newUser() {
     this.appService?.send({
       type: "user choosed",
-      name: undefined,
+      profile: undefined,
     });
   }
 
@@ -155,6 +164,11 @@ class Profile extends LitElement {
               </li>
             `
           )}
+          ${this.profiles.length === 0 ? html`
+            <div class="no-profile">
+              <span>add new user!</span>
+            </div>
+          `: ""}
         </ul>
 
         <button class="new-btn" @click=${this.newUser}>

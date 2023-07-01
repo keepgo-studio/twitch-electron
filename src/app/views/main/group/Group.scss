@@ -1,0 +1,120 @@
+@import "/src/app/utils/shared.scss";
+
+#group {
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.group-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 0;
+
+  h3 {
+    color: $gray;
+    font-size: 15px;
+  }
+
+  .group-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: $white;
+
+    .group-name {
+      font-size: 36px;
+      color: $white;
+      border-radius: 6px;
+    }
+
+    .channel-info-container {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+
+      .channels {
+        font-size: 13px;
+        color: $twitch-purple;
+        margin-bottom: 4px;
+      }
+
+      .live {
+        font-size: 11px;
+        padding:3px 16px;
+        border-radius: 999px;
+        color: $white;
+        background-color: $zero;
+      }
+    }
+  }
+}
+
+.body {
+  height: 100%;
+  overflow-y: auto;
+  background-color: $rock;
+  padding: 14px;
+  padding-right: 10px;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+      background-color: $white;
+      border-radius: 999px;
+      background-clip: padding-box;
+      border: 3px solid transparent;
+  }
+  &::-webkit-scrollbar-track {
+      background-color: $rock;
+      border-radius: 999px;
+      box-shadow: inset 0px 0px 5px $rock;
+  }
+
+  ul {
+    height: 1px;
+
+    li {
+      background-color: $black-ops;
+      display: grid;
+      grid-template-columns: 58px 1fr 46px;
+      align-items: center;
+      margin-bottom: 14px;
+      height: 78px;
+
+      .thumnbnail-icon {
+        justify-self: center;
+        align-self: center;
+
+        img {
+          display: block;
+          width: 35px;
+          height: 35px;
+          background-color: $light-gray;
+          border-radius: 50%;
+        }
+      }
+      .chennel-name {
+        color: $white;
+        font-size: 20px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+      .viewer-count {
+        color: $white;
+        font-size: 16px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+
+      .play-icon {
+        justify-self: center;
+        align-self: center;
+      }
+    }
+  }
+}

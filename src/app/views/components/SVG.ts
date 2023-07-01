@@ -17,7 +17,6 @@ class Svg extends LitElement {
   data?: TSVGModule;
 
   render() {
-    console.log(this.data);
     if (typeof this.data === "undefined") return "";
 
     return html`

@@ -6,6 +6,10 @@
   fill: inherit;
 }
 
+li {
+  display: block;
+}
+
 button {
   border: none;
   outline: none;
@@ -19,6 +23,8 @@ $twitch-purple: #9146FF;
 $twitch-egg: #00FA05;
 $rock: #34343c;
 $gray: #8A8C8E;
-
+$light-gray: #D9D9D9;
+$twitch-cuddle: #FA1ED2;
+$zero: #1E69FF;
 
 $duration: 300ms;

@@ -1,0 +1,152 @@
+@import "/src/app/utils/shared.scss";
+
+#auth {
+  width: 100%;
+  height: 100%;
+  padding: 30px;
+  display: grid;
+  grid-template-rows: 35% 1fr;
+  background-color: $black-ops;
+  position: relative;
+
+  .text-container {
+    font-weight: bold;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+    h3 {
+      font-size: 16px;
+      color: $gray;
+    }
+    h2 {
+      color: $white;
+      margin-bottom: .5em;
+    }
+    span {
+      color: $twitch-cuddle;
+    }
+    img {
+      width: 75px
+    }
+    
+    &.new {
+      align-items: center;
+
+      img {
+        width: 150px;
+      }
+    }
+  }
+
+  .profile-container {
+    background-color: $rock;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    .profile {
+      text-align: center;
+
+      & > h3  {
+        color: $gray;
+        font-size: 16px;
+        margin-top: 20px;
+      }
+  
+      & > h1 {
+        color: $white;
+        font-size: 22px;
+        margin: 20px 0;
+      }
+    }
+
+    img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    color: $white;
+    background-color: $twitch-purple;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: ease 400ms;
+
+    .hover-effect {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0px;
+      height: 100%;
+      transition: ease 300ms;
+      background-color: #fff;
+    }
+
+    &:hover {
+      color: $twitch-purple;
+
+      .hover-effect {
+        z-index: 0;
+        width: 100%;
+      }
+    }
+    .icon {
+      z-index: 1;
+      width: 60px;
+      height: 60px;
+      background-color: $white;
+      padding: 14px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    p {
+      z-index: 1;
+      font-size: 14px;
+      padding-left: 16px;
+      font-weight: bold;
+      letter-spacing: -0.05em;
+    }
+  }
+}
+
+.after-login {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 7vw;
+  color: $white;
+  z-index: -1;
+
+  h3 {
+    margin-bottom: .3em;
+    letter-spacing: 0.07em;
+    color: $twitch-purple;
+  }
+
+  h1 {
+    letter-spacing: -0.05em;
+  }
+}

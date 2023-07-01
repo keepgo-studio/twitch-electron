@@ -80,7 +80,7 @@ export const APP_CHILD_ID = "fbaseauth";
 export type AppContext = {};
 
 export type AppEvents = 
-| { type: "user choosed"; name: string | undefined }
+| { type: "user choosed"; profile?: TProfile }
 | { type: "token is"; isValid: boolean }
 | { type: 'done.invoke.fbaseauth', data: { userInfo: TUserInfo } }
 | { type: "connection" }

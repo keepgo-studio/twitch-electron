@@ -1,24 +1,23 @@
-import { LitElement, html } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { Interpreter, State } from "xstate";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
+import { FbaseAuthEvents } from "@state/App.state";
 
 import type { AuthPostEvents, WorkerPostEvents } from "@utils/events";
-import { FbaseAuthEvents } from "@state/App.state";
-/**
- * auth button 하나 만들기
- *
- * 클릭하면 다 view clear해서 3dot loading만 보여주기,
- *
- * 만약 connection이 web과 끊기면 다시 auth 버튼 보여줌
- */
+
+import styles from "./TwitchAuth.scss";
+import { Expo, gsap } from "gsap";
+
 @customElement("view-twitch-auth")
 class TwitchAuthView extends LitElement {
+  static styles = unsafeCSS(styles);
+
   private _subscribed = false;
   private _userInfo: TUserInfo;
 
-  @property()
-  username: string
+  @property({ type: Object })
+  profile: TProfile
 
   @property({ type: Object })
   authService?: Interpreter<any, any, FbaseAuthEvents>;
@@ -29,15 +28,55 @@ class TwitchAuthView extends LitElement {
   @state()
   _name: string = "";
 
-  // @state()
-  // ping = 0
+  @query(".text-container")
+  textElem: Element;
+
+  @query(".profile-container")
+  profileElem: Element;
+
+  @query(".after-login")
+  afterElem: Element;
 
   authWorkerListener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
     if (e.data.type === "after-open-user-db") {
-      setTimeout(() => this.authService?.send({
-        type: "complete auth",
-        userInfo: this._userInfo
-      }), 2000);
+      const animation = () => {
+        gsap.timeline()
+        .to(this.textElem, {
+          y: 10,
+          opacity: 0,
+          ease: Expo.easeOut,
+          duration: 1,
+          delay: 0.5,
+        })
+        .to(this.profileElem, {
+          y: 10,
+          opacity: 0,
+          ease: Expo.easeOut,
+          duration: 1,
+        }, "-=0.3")
+        .set(this.afterElem, {
+          zIndex: 1,
+        })
+        .from(this.afterElem.querySelector("h3"), {
+          opacity: 0,
+          ease: Expo.easeOut,
+          duration: 1,
+        })
+        .from(this.afterElem.querySelector("h1"), {
+          opacity: 0,
+          ease: Expo.easeOut,
+          duration: 1,
+        })
+        .set({}, { 
+          delay: 1, onComplete: () => {
+            this.authService?.send({
+              type: "complete auth",
+              userInfo: this._userInfo
+            })
+          }
+        })
+      }
+      animation();
     }
   }
 
@@ -65,20 +104,6 @@ class TwitchAuthView extends LitElement {
     })
   }
 
-  // private _stid?: ReturnType<typeof setTimeout>;
-  // handleConnection() {
-  //   if (this._stid) {
-  //     clearTimeout(this._stid);
-  //     this._stid = undefined;
-  //   }
-
-  //   // TODO: hide button
-
-  //   this._stid = setTimeout(() => {
-  //     // TODO: show button
-  //   }, window.pingTime);
-  // }
-
   disconnectedCallback(): void {
     removeWorkerListener(this.authWorkerListener);
   }
@@ -87,25 +112,62 @@ class TwitchAuthView extends LitElement {
     this.authService!.send("redirect authorization");
   }
 
-  render() {
-    if (!this.authService) return;
+  protected shouldUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): boolean {
+    if (!this.authService) return false;
 
+    return true;
+  }
+
+  render() {
     if (!this._subscribed) {
-      this.authService.subscribe(s => this._state = s);
-    }
+      this.authService!.subscribe(s => this._state = s);
+  }
+
+    const isAddingNew = this.profile.username === "undefined--adding-new-user";
+
+    const reAuthUserHTML = html`
+      <h3>Token expired</h3>
+
+      <div>
+        <h2>To <span>give permission </span>for,</h2>
+  
+        <img src="public/logo.png"/>
+      </div>
+    `
+
+    const newUserHTML = html`
+      <h3>Add new user</h3>
+
+      <img src="public/logo.png"/>
+    `
 
     return html`
-      <div>
-        <p>
-          Logging in with ${this.username}
-        </p>
-        ${this._name !== ""
-          ? html`<div>${this._name}</div>`
-          : ""}
-        ${this._state.matches("idle") && this._name == ""
-          ? html`<button @click=${this.btnClickHandler}>fbase</button>`
-          : ""}
+      <div id="auth">
+        <div class="text-container ${isAddingNew ? "new" : ""}">
+          ${isAddingNew ? newUserHTML : reAuthUserHTML}
+        </div>
+
+        <div class="profile-container">
+          <div class="profile">
+            <h3>${isAddingNew ? "" : "Authorization again with"}</h3>
+            <h1>${isAddingNew ? "" : this.profile.username}</h1>
+          </div>
+
+          <img src="${this.profile.profile_image_url}"/>
+          
+          <button @click=${this.btnClickHandler}>
+            <div class="hover-effect"></div>
+            <div class="icon"><img src="public/TwitchGlitchPurple.png"/></div>
+            <p>REQUEST AUTH</p>
+          </button>
+        </div>
+
+        <div class="after-login">
+          <h3>Hello,</h3>
+          <h1>${this._name}</h1>
+        </div>
       </div>
+
     `;
   }
 }
