@@ -14,3 +14,14 @@ export function addSelfListener(listener: (e: MessageEvent<WebMessageForm<
   >>) => void) {
   self.addEventListener("message", listener)
 }
+
+export function parseUrl(url: string, params: Array<{
+  key: string,
+  val: string
+}>) {
+  const urlObj = new URL(url);
+
+  params.forEach(_p => urlObj.searchParams.append(_p.key, _p.val));
+
+  return urlObj.href;
+}

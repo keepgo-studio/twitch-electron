@@ -115,11 +115,15 @@ class Group extends LitElement {
               const liveInfo = this.liveChannels!.find(
                 (_channel) => _channel.user_id === channel.broadcaster_id
               );
-              
+
               return html`
                 <li>
                   <div class="thumnbnail-icon">
-                    <img src="public/account_circle.png"/>
+                    <img
+                      src=${channel.profile_image_url === ""
+                        ? "public/account_circle.png"
+                        : channel.profile_image_url}
+                    />
                   </div>
                   <div>
                     <div class="chennel-name">${channel.broadcaster_name}</div>
@@ -173,9 +177,7 @@ class Group extends LitElement {
           </div>
         </div>
 
-        <section class="body">
-          ${groupHTML()}
-        </section>
+        <section class="body">${groupHTML()}</section>
 
         ${this.group?.name === "all"
           ? html``

@@ -1,5 +1,5 @@
 import DB from "./db";
-import { addSelfListener, sendToMainThread } from "./utils";
+import { addSelfListener, sendToMainThread, parseUrl } from "./utils";
 
 import type {
   AddChannelsPostEvents,
@@ -110,6 +110,11 @@ export class ViewAppHandler extends ViewHandler {
 
         const channels = await channelsGetTx.store.getAll();
 
+        const needThumbnailChanels: Array<{
+          key: string,
+          val: string
+        }> = [];
+
         const newChannels: Array<TChannel> = await Promise.all(
           followList.map(async (_channel) => {
             const findChannel = channels!.find(
@@ -117,6 +122,13 @@ export class ViewAppHandler extends ViewHandler {
             );
 
             const tx = DB.userDB!.transaction("Groups", "readwrite");
+            
+            if (findChannel === undefined || findChannel.profile_image_url === "") {
+              needThumbnailChanels.push({
+                key: "id",
+                val: _channel.broadcaster_id
+              });
+            }
 
             if (findChannel === undefined) {
               const etcGroup = await tx.store.get("etc");
@@ -129,6 +141,7 @@ export class ViewAppHandler extends ViewHandler {
                 broadcaster_login: _channel.broadcaster_login,
                 broadcaster_name: _channel.broadcaster_name,
                 followed_at: _channel.followed_at,
+                profile_image_url: "",
                 group_id: "etc",
               } as TChannel;
             }
@@ -151,6 +164,40 @@ export class ViewAppHandler extends ViewHandler {
             tx.store.add(_channel, _channel.broadcaster_id);
           })
         );
+
+        if (needThumbnailChanels.length > 0) {
+          const url = parseUrl(`${FBASE_FUNCTION_URL}/getUserInfo`, needThumbnailChanels);
+          const data: Array<{
+            id: BroadcasterId;
+            offline_image_url: string,
+            profile_image_url: string
+          }>= await fetch(
+              url,
+              {
+                method: "GET",
+                headers: {
+                  access_token: access_token!,
+                },
+              }
+            )
+              .then((res) => res.json())
+              .then((data) => data["user_info"].data)
+              .catch(() => ([{
+                id: "",
+                offline_image_url: "",
+                profile_image_url: ""
+              }]));
+          
+          await Promise.all(data.map(async _user => {
+            const tx = DB.userDB!.transaction("Channels", "readwrite");
+            const channel = await tx.store.get(_user.id);
+
+            if (channel) {
+              channel.profile_image_url = _user.profile_image_url;
+              await tx.store.put(channel, _user.id);
+            }
+          }))
+        }
 
         const completeMessage: WebMessageForm<WorkerPostEvents> = {
           origin: "worker",
@@ -235,18 +282,22 @@ export class ViewAppHandler extends ViewHandler {
 
 export class ViewAuthHandler extends ViewHandler {
   async saveUserProfile(userInfo: TUserInfo) {
+    const url = parseUrl(`${FBASE_FUNCTION_URL}/getUserInfo`, [{
+      key: "id",
+      val: userInfo.current_user_id!
+    }]);
+
     const twitchUserInfo:{
       id: BroadcasterId;
       profile_image_url: string;
       offline_image_url: string;
     } = await fetch(
-      `${FBASE_FUNCTION_URL}/getUserInfo`,
+      url,
       {
         method: "GET",
         headers: {
-          access_token: userInfo.access_token,
-          current_user_id: userInfo.current_user_id,
-        } as any,
+          access_token: userInfo.access_token!,
+        },
       }
     )
       .then((res) => res.json())
@@ -255,6 +306,7 @@ export class ViewAuthHandler extends ViewHandler {
         offline_image_url: "",
         profile_image_url: ""
       }));
+    
     
     const tx = DB.profileDB?.transaction("Profiles", "readwrite");
 
@@ -399,7 +451,7 @@ export class ViewMainHandler extends ViewHandler {
 
         // if group name exist
         if (!result) {
-          console.log("already exist group name");
+          console.error("already exist group name");
           message.data = undefined;
         } else {
           const deleteTx = DB.userDB!.transaction("Groups", "readwrite");
@@ -469,6 +521,8 @@ export class ViewMainHandler extends ViewHandler {
 
         const channels = await channelsGetTx.store.getAll();
 
+        const needThumbnailChanels: Array<string> = [];
+
         const syncChannels: Array<TChannel> = await Promise.all(
           followList.map(async (_channel) => {
             const findChannel = channels!.find(
@@ -483,11 +537,14 @@ export class ViewMainHandler extends ViewHandler {
               etcGroup!.channels.push(_channel.broadcaster_id);
               tx.store.put(etcGroup!, "etc");
 
+              needThumbnailChanels.push(_channel.broadcaster_id);
+
               return {
                 broadcaster_id: _channel.broadcaster_id,
                 broadcaster_login: _channel.broadcaster_login,
                 broadcaster_name: _channel.broadcaster_name,
                 followed_at: _channel.followed_at,
+                profile_image_url: "",
                 group_id: "etc",
               } as TChannel;
             }

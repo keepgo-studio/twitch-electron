@@ -54,7 +54,8 @@ declare global {
     broadcaster_name: string;
     broadcaster_login: string;
     followed_at: string;
-    group_id: GroupId
+    group_id: GroupId,
+    profile_image_url: string;
   }
 
   interface TStream {
