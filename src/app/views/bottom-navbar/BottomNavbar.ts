@@ -24,7 +24,7 @@ class BottomNavbar extends LitElement {
 
   render() {
     return html`
-      <nav>
+      <!-- <nav>
         <div>
           <ul>
             <li class="aot" @click=${this.fireEvent}><i>${this.userInfo?.AOT}</i></li>
@@ -34,7 +34,7 @@ class BottomNavbar extends LitElement {
             <li class="syncFromTwitch" @click=${this.fireEvent}><i>Sync List</i></li>
           </ul>
         </div>
-      </nav>
+      </nav> -->
     `;
   }
 }

@@ -53,7 +53,7 @@ class TwitchAuthView extends LitElement {
           opacity: 0,
           ease: Expo.easeOut,
           duration: 1,
-        }, "-=0.3")
+        }, "-=0.5")
         .set(this.afterElem, {
           zIndex: 1,
         })

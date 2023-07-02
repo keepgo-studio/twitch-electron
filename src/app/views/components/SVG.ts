@@ -25,10 +25,9 @@ class Svg extends LitElement {
           display: inline-block;
           width: ${this.width}px;
           height: ${this.height}px;
-          fill: ${this.fill};
         }
-        svg path {
-          fill: ${this.fill};
+        svg, path, rect {
+          fill: ${this.fill} !important;
         }
       </style>
       ${unsafeHTML(this.data)}

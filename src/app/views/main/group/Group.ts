@@ -1,5 +1,5 @@
 import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { sendToWorker } from "@utils/message";
 
@@ -10,9 +10,7 @@ import type { GroupPostEvents } from "@utils/events";
 
 import styles from "./Group.scss";
 import PlaySVG from "@public/play_circle_filled.svg";
-/**
- * TODO: 채널들을 선택해서 옮기고 싶은 그룹을 선택하는 ui 구현 필요
- */
+
 @customElement("view-group")
 class Group extends LitElement {
   static styles = unsafeCSS(styles);
@@ -29,6 +27,9 @@ class Group extends LitElement {
   @state()
   _openAddChannels = false;
 
+  @query(".body")
+  bodyElem: Element;
+
   protected shouldUpdate(
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): boolean {
@@ -44,6 +45,30 @@ class Group extends LitElement {
     _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
   ): void {
     if (_changedProperties.has("group")) this._openAddChannels = false;
+  }
+
+  firstUpdated() {
+    const io = new IntersectionObserver(
+      (entries, _) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const container = entry.target.querySelector(".channel-container");
+            container!.classList.add("show");
+          } else {
+            const container = entry.target.querySelector(".channel-container");
+            container!.classList.remove("show");
+          }
+        });
+      },
+      {
+        root: this.bodyElem,
+        threshold: 0.2,
+      }
+    );
+
+    [...this.bodyElem.querySelectorAll("ul > li")].forEach((li) =>
+      io.observe(li)
+    );
   }
 
   openPlayer() {}
@@ -83,6 +108,8 @@ class Group extends LitElement {
   }
 
   render() {
+    const groupColor = this.group?.name === "all" ? "#fff" : this.group?.color;
+
     const groupHTML = () => {
       let channels;
 
@@ -118,29 +145,42 @@ class Group extends LitElement {
 
               return html`
                 <li>
-                  <div class="thumnbnail-icon">
-                    <img
-                      src=${channel.profile_image_url === ""
-                        ? "public/account_circle.png"
-                        : channel.profile_image_url}
-                    />
-                  </div>
-                  <div>
-                    <div class="chennel-name">${channel.broadcaster_name}</div>
-                    <div class="viewer-count-box">
-                      ${liveInfo && liveInfo.viewer_count}
+                  <div class="channel-container">
+                    <div class="thumnbnail-icon">
+                      <img
+                        class="${liveInfo ? "online" : "offline"}"
+                        src=${channel.profile_image_url === ""
+                          ? "public/account_circle.png"
+                          : channel.profile_image_url}
+                      />
                     </div>
-                  </div>
-                  <div
-                    id=${`play-${channel.broadcaster_id}`}
-                    class="play-icon"
-                    @click=${this.play}
-                  >
-                    <component-svg
-                      .fill=${"#fff"}
-                      .data=${PlaySVG}
-                      .width=${32}
-                    ></component-svg>
+                    <div class="text-container">
+                      <div class="channel-name">
+                        ${channel.broadcaster_name}
+                      </div>
+                      <div class="viewer-count">
+                        ${liveInfo
+                          ? html`
+                              <i></i>
+                              <span class="online">
+                                ${liveInfo.viewer_count}
+                              </span>
+                            `
+                          : html`<span class="offline">offline</span>`}
+                      </div>
+                    </div>
+                    <div
+                      id=${`play-${channel.broadcaster_id}`}
+                      style="fill:${groupColor}"
+                      class="play-icon"
+                      @click=${this.play}
+                    >
+                      <component-svg
+                        .fill=${"inherit"}
+                        .data=${PlaySVG}
+                        .width=${32}
+                      ></component-svg>
+                    </div>
                   </div>
 
                   ${this.group!.name !== "all" && this.group!.name !== "etc"
@@ -159,14 +199,21 @@ class Group extends LitElement {
       `;
     };
 
-    // TODO: should add color style to group name and scroll
     return html`
+      <style>
+        .body::-webkit-scrollbar-thumb {
+          background-color: ${groupColor};
+        }
+      </style>
+
       <section id="group">
         <div class="group-header">
           <h3>Group</h3>
 
           <div class="group-info">
-            <div class="group-name">${this.group?.name}</div>
+            <div style="color:${groupColor}" class="group-name">
+              ${this.group?.name}
+            </div>
 
             <div class="channel-info-container">
               <p class="channels"><b>${this.channels?.length}</b> channels</p>
@@ -182,9 +229,9 @@ class Group extends LitElement {
         ${this.group?.name === "all"
           ? html``
           : html`
-              <div>
+              <div class="add-channels">
                 <button @click=${this.openAddChannelsView}>
-                  add new channels
+                  <img src="public/add_channels.png" />
                 </button>
               </div>
             `}

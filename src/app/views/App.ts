@@ -34,18 +34,32 @@ const createAnimation = (elem: Element) => {
       }
     });
 }
-const removeAnimation = (elem: Element) => {
-  gsap.timeline()
-    .to(elem, {
-      x: "100vw",
-      ease: Expo.easeOut,
-      duration: 1,
-      delay: 0.5,
-      onComplete:() => elem.classList.remove("show")
-    })
-    .set(elem, {
-      display: "none"
-    });
+const removeAnimation = (elem: Element, type: "scroll" | "fadeOut") => {
+  if (type === "scroll") {
+    gsap.timeline()
+      .to(elem, {
+        x: "100vw",
+        ease: Expo.easeOut,
+        duration: 1,
+        delay: 0.5,
+        onComplete:() => elem.classList.remove("show")
+      })
+      .set(elem, {
+        display: "none"
+      });
+  }
+  else if (type === "fadeOut") {
+    gsap.timeline()
+      .to(elem, {
+        ease: Expo.easeOut,
+        duration: 1,
+        delay: 0.5,
+        onComplete:() => elem.classList.remove("show")
+      })
+      .set(elem, {
+        display: "none"
+      });
+  }
 }
 
 @customElement("view-app")
@@ -120,6 +134,11 @@ class MainView extends LitElement {
 
     addWorkerListener(this.appWorkerListener.bind(this));
 
+    const skeletonRemover = () => {
+      this.ViewSkeleton.classList.remove("show");
+      this.ViewSkeleton.style.display = "none"
+    }
+
     this._service = interpret(
       AppMachine.withConfig({
         actions: {
@@ -127,7 +146,7 @@ class MainView extends LitElement {
             createAnimation(this.ViewProfile);
           },
           "remove profile view": () => {
-            removeAnimation(this.ViewProfile);
+            removeAnimation(this.ViewProfile, "scroll");
             this.ViewProfile.setAttribute("loading", "false");
           },
           "get choosed user info from worker": (_, event) => {
@@ -173,17 +192,16 @@ class MainView extends LitElement {
             sendToWorker(message);
           },
           "create skeleton": () => {
-            createAnimation(this.ViewSkeleton)
+            createAnimation(this.ViewSkeleton);
           },
           "remove skeleton": () => {
-            this.ViewSkeleton.classList.remove("show");
-            this.ViewSkeleton.style.display = "none"
+            removeAnimation(this.ViewSkeleton, "fadeOut");
           },
           "create fbase auth view": () => {
             createAnimation(this.ViewTwitchAuth);
           },
           "remove fbase auth view": () => {
-            removeAnimation(this.ViewTwitchAuth)
+            removeAnimation(this.ViewTwitchAuth, "scroll")
           },
           "send connected": sendTo(APP_CHILD_ID, "check connection"),
           "sync followed list": () => {
@@ -199,7 +217,7 @@ class MainView extends LitElement {
             createAnimation(this.ViewMain);
           },
           "remove ui": () => {
-            removeAnimation(this.ViewMain);
+            removeAnimation(this.ViewMain, "scroll");
           },
           "get saved data": () => {
             const messageChannel: WebMessageForm<AppPostEvents> = {
