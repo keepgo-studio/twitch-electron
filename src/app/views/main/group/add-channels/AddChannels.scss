@@ -1,3 +1,134 @@
-.choose {
-  color: red;
+@import "/src/app/utils/shared.scss";
+
+#add-channels {
+  position: fixed;
+  top:0;
+  left:0;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  width: 100vw;
+  height: 100vh;
+  padding: 40px 20px;
+  background-color: rgba(0, 0, 0, 0.4);
+
+  .container {
+    width: 100%;
+    height: 100%;
+    background-color: $black;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+
+    .header {
+      h3 {
+        color: $gray;
+        font-size: 16px;
+      }
+      h1 {
+        font-size: 36px;
+        color: $white;
+      }
+      p {
+        font-size: 18px;
+        color: $rock;
+        margin-top: .5em;
+        font-weight: 500;
+
+        span { color: $twitch-purple; }
+      }
+    }
+
+    & > ul {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 0;
+      margin-bottom: 20px;
+
+      &::-webkit-scrollbar {
+        width: 10px;
+        background-color: transparent;
+      }
+      &::-webkit-scrollbar-thumb {
+          border-radius: 999px;
+          background-clip: padding-box;
+          border: 3px solid transparent;
+          background-color: $twitch-purple;
+      }
+      &::-webkit-scrollbar-track {
+          background-color: $black;
+          border-radius: 999px;
+          box-shadow: inset 0px 0px 5px $black;
+      }
+
+      li.group-container {
+        border-top: $twitch-purple 1px solid;
+        border-bottom: $twitch-purple 1px solid;
+        padding: 10px 0;
+        
+        h3 {
+          color: $white;
+          font-size: 18px;
+          margin-bottom: 10px;
+        }
+
+        .group-list {
+          background-color: $black-ops;
+          padding: 10px;
+
+          li:not(:last-child) {
+            margin-bottom: 8px;
+          }
+
+          li {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            height: 60px;
+            align-items: center;
+            color: $white;
+            background-color: $black;
+            transition: ease 300ms;
+            cursor: pointer;
+
+            &.choose {
+              background-color: $twitch-purple;
+            }
+            img {
+              justify-self: center;
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+            }
+
+            &:hover {
+              background-color: $twitch-purple;
+            }
+          }
+        }
+      }
+    }
+
+    .btn-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      button {
+        width: 100%;
+        font-size: 15px;
+        padding: 12px 0;
+        color: $white;
+        font-weight: 100;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .cancel {
+        margin-right: 5px;
+        background-color: $black-ops;
+      }
+      .confirm {
+        margin-left: 5px;
+        background-color: $zero;
+      }
+    }
+  }
 }

@@ -3,7 +3,7 @@ import { customElement, query, state } from 'lit/decorators.js';
 
 import styles from "./Dialog.scss";
 
-abstract class DialogCore extends LitElement {
+export abstract class DialogCore extends LitElement {
   static styles = unsafeCSS(styles);
 
 	@state()

@@ -2,6 +2,8 @@ import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { sendToWorker } from "@utils/message";
+import { AddChannelsDialog } from "./add-channels/AddChannels";
+import { Alert } from "@views/components/Dialog";
 
 import "./channel/Channel";
 import "./add-channels/AddChannels";
@@ -10,9 +12,11 @@ import type { GroupPostEvents } from "@utils/events";
 
 import styles from "./Group.scss";
 import PlaySVG from "@public/play_circle_filled.svg";
+import CloseSVG from "@public/x.circle.fill.svg"
 
 @customElement("view-group")
 class Group extends LitElement {
+  _io: IntersectionObserver;
   static styles = unsafeCSS(styles);
 
   @property({ type: Object })
@@ -23,9 +27,6 @@ class Group extends LitElement {
 
   @property({ type: Array })
   liveChannels?: Array<TStream>;
-
-  @state()
-  _openAddChannels = false;
 
   @query(".body")
   bodyElem: Element;
@@ -41,14 +42,12 @@ class Group extends LitElement {
       return false;
     else return true;
   }
-  protected willUpdate(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
-    if (_changedProperties.has("group")) this._openAddChannels = false;
-  }
 
-  firstUpdated() {
-    const io = new IntersectionObserver(
+
+  updated() {
+    if (this._io) this._io.disconnect();
+
+    this._io = new IntersectionObserver(
       (entries, _) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -67,14 +66,16 @@ class Group extends LitElement {
     );
 
     [...this.bodyElem.querySelectorAll("ul > li")].forEach((li) =>
-      io.observe(li)
+      this._io.observe(li)
     );
   }
 
-  openPlayer() {}
+  async openAddChannelsView() {
+    const result = await new AddChannelsDialog(this, this.group!.name, this.channels!).show();
 
-  openAddChannelsView() {
-    this._openAddChannels = true;
+    if (result === undefined) {
+      await new Alert(`All channels is in ${this.group!.name}`).show();
+    }
   }
 
   play(e: MouseEvent) {
@@ -187,8 +188,13 @@ class Group extends LitElement {
                     ? html` <button
                         id=${`btn-${channel.broadcaster_id}`}
                         @click=${this.removeChannelFromGroup}
+                        class="remove-btn"
                       >
-                        (X)
+                        <component-svg
+                          .width=${24}
+                          .fill=${"inherit"}
+                          .data=${CloseSVG}
+                        ></component-svg>
                       </button>`
                     : ""}
                 </li>
@@ -235,15 +241,6 @@ class Group extends LitElement {
                 </button>
               </div>
             `}
-        ${this._openAddChannels
-          ? html`
-              <view-add-channels
-                @close=${() => (this._openAddChannels = false)}
-                .currentGroupId=${this.group?.name}
-                .channels=${this.channels}
-              ></view-add-channels>
-            `
-          : ""}
       </section>
     `;
   }
