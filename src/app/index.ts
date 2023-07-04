@@ -2,6 +2,8 @@ import { addWorkerListener } from "@utils/message";
 import { AppTag } from "@views/App";
 import { gsap } from "gsap";
 import { CSSPlugin } from "gsap/CSSPlugin" 
+import { Draggable } from "gsap/Draggable";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import "@components/Alarm"
 import "@components/Dialog"
@@ -18,7 +20,7 @@ function main () {
       document.body.append(app);
   })
 
-  gsap.registerPlugin(CSSPlugin);
+  gsap.registerPlugin(CSSPlugin, Draggable, ScrollTrigger);
 }
 
 main();

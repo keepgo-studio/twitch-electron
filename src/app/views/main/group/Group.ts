@@ -43,7 +43,6 @@ class Group extends LitElement {
     else return true;
   }
 
-
   updated() {
     if (this._io) this._io.disconnect();
 

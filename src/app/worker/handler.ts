@@ -12,9 +12,9 @@ import type {
 } from "@utils/events";
 
 const TWITCH_OAUTH_URL = "https://id.twitch.tv/oauth2";
-// const FBASE_FUNCTION_URL =
-//   "https://asia-northeast3-twitch-group.cloudfunctions.net";
-const FBASE_FUNCTION_URL = "http://127.0.0.1:5001/twitch-group/asia-northeast3";
+const FBASE_FUNCTION_URL =
+  "https://asia-northeast3-twitch-group.cloudfunctions.net";
+// const FBASE_FUNCTION_URL = "http://127.0.0.1:5001/twitch-group/asia-northeast3";
 
 abstract class ViewHandler {
   constructor() {
@@ -370,7 +370,7 @@ export class ViewMainHandler extends ViewHandler {
 
         const newGroup: TGroup = {
           channels: [],
-          color: "",
+          color: "#fff",
           created_at: new Date().getTime().toString(),
           name: groupName,
         };

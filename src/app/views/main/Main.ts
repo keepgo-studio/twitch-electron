@@ -51,6 +51,9 @@ class Main extends LitElement {
   @query("#main-section")
   MainSection: Element;
 
+  @query("view-group-list")
+  ViewGroupList: Element;
+
   private _connectedChannels = [];
 
   async mainWorkerLisetener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
@@ -130,7 +133,6 @@ class Main extends LitElement {
       this.followList = [...this.followList!];
     })
 
-
     addWorkerListener(this.mainWorkerLisetener.bind(this));
   }
 
@@ -143,6 +145,16 @@ class Main extends LitElement {
     if (_changedProperties.has("userInfo")) {
       window.api.syncAot(this.userInfo!.AOT);
     }
+  }
+
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    this.shadowRoot!.addEventListener("click", (e) => {
+      const target = e.target as Element;
+
+      if (target.tagName !== "VIEW-GROUP-LIST") {
+        this.ViewGroupList.dispatchEvent(new CustomEvent("fold"));
+      }
+    });    
   }
 
   changeGroupListener(e: CustomEvent) {
