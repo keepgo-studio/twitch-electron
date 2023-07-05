@@ -1,16 +1,3 @@
-
-// type WorkerHandlingEvents =
-//   | "get-user-info"
-//   | "get-access-token-valid"
-//   | "store-user-info"
-//   | "get-followed-channels"
-//   | "save-AOT"
-//   | "change-group-name"
-//   | "append-new-group"
-//   | "get-store-group-list"
-//   ;
-// export type { WorkerHandlingEvents };
-
 import DB from "./db";
 import { ViewAddChannelsHandler, ViewAppHandler, ViewAuthHandler, ViewGroupHandler, ViewMainHandler, ViewProfileHandler } from "./handler";
 import { sendToMainThread } from "./utils";

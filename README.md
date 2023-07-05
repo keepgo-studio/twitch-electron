@@ -83,7 +83,7 @@ https://stackoverflow.com/questions/67593519/how-can-i-get-response-body-respons
 components which are used as view => 
 
 ```js
-@customElement("view-*");
+  @customElement("view-*");
 ```
 
 components which are used as reusable components => 
@@ -92,3 +92,15 @@ components which are used as reusable components =>
   @customElemtn("component-*")
 ```
 
+
+### Needs
+
+⭐️**Group removing feature**⭐️
+
+Error handlig needed if group name didn't exist in idb
+
+Websocket subscription for each broadcaster
+
+publish app
+
+websites for deploy and contact

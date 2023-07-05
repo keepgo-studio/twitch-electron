@@ -29,9 +29,9 @@
         color: $white;
       }
       p {
-        font-size: 18px;
+        font-size: 15px;
         color: $rock;
-        margin-top: .5em;
+        margin: .5em 0;
         font-weight: 500;
 
         span { color: $twitch-purple; }
@@ -90,7 +90,7 @@
             cursor: pointer;
 
             &.choose {
-              background-color: $twitch-purple;
+              background-color: $twitch-dragon;
             }
             img {
               justify-self: center;

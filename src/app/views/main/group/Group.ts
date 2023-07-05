@@ -73,7 +73,7 @@ class Group extends LitElement {
     const result = await new AddChannelsDialog(this, this.group!.name, this.channels!).show();
 
     if (result === undefined) {
-      await new Alert(`All channels is in ${this.group!.name}`).show();
+      await new Alert("No Other Channels",`All channels is in ${this.group!.name}`).show();
     }
   }
 
@@ -108,35 +108,37 @@ class Group extends LitElement {
   }
 
   render() {
-    const groupColor = this.group?.name === "all" ? "#fff" : this.group?.color;
+    const groupColor = this.group!.name === "all" ? "#fff" : this.group?.color;
+
+    let currentGroupChannels: Array<TChannel>;
+
+    if (this.group!.name === "all") currentGroupChannels = [...this.channels!];
+    else {
+      currentGroupChannels = this.channels!.filter(
+        (_channel) => _channel.group_id === this.group!.name
+      );
+    }
+
+    currentGroupChannels.sort((a, b) => {
+      const aLiveInfo = this.liveChannels!.find(
+        (_channel) => _channel.user_id === a.broadcaster_id
+      );
+      const bLiveInfo = this.liveChannels!.find(
+        (_channel) => _channel.user_id === b.broadcaster_id
+      );
+
+      if (aLiveInfo === undefined) return 1;
+      else if (bLiveInfo === undefined) return -1;
+      else if (aLiveInfo.viewer_count < bLiveInfo.viewer_count) return 1;
+      else return -1;
+    });
 
     const groupHTML = () => {
-      let channels;
-
-      if (this.group!.name === "all") channels = [...this.channels!];
-      else
-        channels = this.channels!.filter(
-          (_channel) => _channel.group_id === this.group?.name
-        );
-
-      channels.sort((a, b) => {
-        const aLiveInfo = this.liveChannels!.find(
-          (_channel) => _channel.user_id === a.broadcaster_id
-        );
-        const bLiveInfo = this.liveChannels!.find(
-          (_channel) => _channel.user_id === b.broadcaster_id
-        );
-
-        if (aLiveInfo === undefined) return 1;
-        else if (bLiveInfo === undefined) return -1;
-        else if (aLiveInfo.viewer_count < bLiveInfo.viewer_count) return 1;
-        else return -1;
-      });
 
       return html`
         <ul>
           ${repeat(
-            channels,
+            currentGroupChannels,
             (channel) => channel.broadcaster_id,
             (channel) => {
               const liveInfo = this.liveChannels!.find(
@@ -204,6 +206,13 @@ class Group extends LitElement {
       `;
     };
 
+    let liveCnt = this.group!.name === "all" ? this.liveChannels!.length : 0;
+
+    currentGroupChannels.forEach(_channel => {
+      if (this.liveChannels!.find(_live => _live.user_id === _channel.broadcaster_id) &&
+        _channel.group_id === this.group!.name) liveCnt++;
+    })
+
     return html`
       <style>
         .body::-webkit-scrollbar-thumb {
@@ -221,10 +230,10 @@ class Group extends LitElement {
             </div>
 
             <div class="channel-info-container">
-              <p class="channels"><b>${this.channels?.length}</b> channels</p>
-              ${this.channels!.length > 0 ? html`
+              <p class="channels"><b>${currentGroupChannels.length}</b> channels</p>
+              ${liveCnt > 0 ? html`
                 <p class="live">
-                  <b>${this.liveChannels?.length} online</b>
+                  <b>${liveCnt} online</b>
                 </p>
               `:""}
             </div>

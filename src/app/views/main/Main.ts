@@ -11,6 +11,7 @@ import "@views/bottom-navbar/BottomNavbar"
 import type { MainPostEvents, WorkerPostEvents } from "@utils/events";
 
 import styles from "./Main.scss";
+import { ColorPicker } from "@views/bottom-navbar/color-picker/ColorPicker";
 
 const findGroup = (groupId: GroupId, groupList?: Array<TGroup>): TGroup | undefined => {
   if (!groupList) return undefined;
@@ -48,8 +49,8 @@ class Main extends LitElement {
   @state()
   _playInfo?: TChannel;
 
-  // @state()
-  // _bottomNavbarData: BottomNavbarDataType
+  @state()
+  _currentGroup: TGroup;
 
   @query("#main-section")
   MainSection: Element;
@@ -81,7 +82,7 @@ class Main extends LitElement {
       const { newChannels, newName } = e.data.data;
 
       if (newName === undefined) {
-        await new Alert("already exist group name").show();
+        await new Alert("Error","already exist group name").show();
         return;
       }
       
@@ -165,6 +166,10 @@ class Main extends LitElement {
     if (_changedProperties.has("userInfo")) {
       window.api.syncAot(this.userInfo!.AOT);
     }
+
+    if (_changedProperties.has("groupList") || _changedProperties.has("_currentGroupId")) {
+      this._currentGroup = {...findGroup(this._currentGroupId,this.groupList)!};
+    }
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -184,7 +189,7 @@ class Main extends LitElement {
   }
 
   async addNewGroupListener(e: CustomEvent) {
-    const newName = await new Prompt('Type new group\'s name').show()
+    const newName = await new Prompt("New Group's Name",'Type new group\'s name').show()
 
     if (newName === undefined) return;
 
@@ -229,15 +234,15 @@ class Main extends LitElement {
   }
   async changeGroupNameListener() {
     if (this._currentGroupId === "all") {
-      await new Alert("you cannot change group name for 'all' group").show();
+      await new Alert("Error", "you cannot change group name for 'all' group").show();
       return;
     }
     else if (this._currentGroupId === "etc") {
-      await new Alert("you cannot change group name for 'etc' group").show();
+      await new Alert("Error", "you cannot change group name for 'etc' group").show();
       return;
     }
 
-    const newName = await new Prompt('Type changed group name').show()
+    const newName = await new Prompt("Change Group Name", 'Type changed group name').show()
 
     if (newName === undefined) return;
 
@@ -256,11 +261,16 @@ class Main extends LitElement {
   }
   async chagneColorListener() {
     if (this._currentGroupId === "all") {
-      await new Alert("color picker").show();
+      await new Alert("Error", "Cannot change color for All").show();
       return;
     }
 
-    const newColor = "#2139f";
+    const currentGroup = findGroup(this._currentGroupId, this.groupList);
+
+    const newColor = await new ColorPicker(currentGroup!.color).show();
+
+    if (newColor === undefined) return;
+
     const message: WebMessageForm<MainPostEvents> = {
       origin: "view-main",
       type: "change-group-color",
@@ -313,7 +323,7 @@ class Main extends LitElement {
           <view-group
             @play=${this.playListener}
             @sync=${this.syncListener}
-            .group=${findGroup(this._currentGroupId, this.groupList)}
+            .group=${this._currentGroup}
             .channels=${this.followList}
             .liveChannels=${this.streamList}
           ></view-group>

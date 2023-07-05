@@ -1,5 +1,5 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { PropertyValueMap, html, unsafeCSS } from "lit";
+import { customElement, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 import { DialogCore } from "@views/components/Dialog";
@@ -137,7 +137,7 @@ export class AddChannelsDialog extends DialogCore {
       <section id="add-channels">
         <div class="container">
           <div class="header">
-            <h3>Group </h3>
+            <h3>Add channels to Group</h3>
             <h1>${this._currentGroupId}</h1>
             <p>current <span>${this._chooseChannels.length} channels</span> selected</p>
           </div>

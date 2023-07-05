@@ -1,5 +1,6 @@
 import DB from "./db";
 import { addSelfListener, sendToMainThread, parseUrl } from "./utils";
+import ColorMap from "@public/colorMap.json";
 
 import type {
   AddChannelsPostEvents,
@@ -368,9 +369,12 @@ export class ViewMainHandler extends ViewHandler {
         const tx = DB.userDB!.transaction("Groups", "readwrite");
         const groupName = e.data.data;
 
+        const mapList = Object.keys(ColorMap);
+        const randomColorIdx = Math.floor(Math.random() * mapList.length);
+        
         const newGroup: TGroup = {
           channels: [],
-          color: "#fff",
+          color: ColorMap[mapList[randomColorIdx]],
           created_at: new Date().getTime().toString(),
           name: groupName,
         };

@@ -51,13 +51,13 @@ export abstract class DialogCore extends LitElement {
 @customElement('component-confirm')
 export class Confirm extends DialogCore {
   @state()
+  _header = "";
+
+  @state()
   _confirmMsg = '';
 
   @state()
   _isConfirmed: boolean;
-
-  @query('#dialog')
-  dialog:Element | undefined;
 
   public returnValue() {
     return this._isConfirmed;    
@@ -75,20 +75,23 @@ export class Confirm extends DialogCore {
     this._closeDialog = true;
   }
 
-  constructor(confirmMsg: string = 'alert') {
+  constructor(header:string, confirmMsg: string) {
     super();
-
+    this._header = header;
     this._confirmMsg = confirmMsg;
   }
 
   render() {
     return html`
-      <div id="confirm">
+      <div class="dialog">
         <div class="container">
-          <h1>${this._confirmMsg}</h1>
-
-          <button @click=${this.handleSubmit} class="confirm">confirm</button>
-          <button @click=${this.handleSubmit} class="cancel">cancel</button>
+            <h1>${this._header}</h1>
+            <p>${this._confirmMsg}</p>
+            
+            <div class="btn-container">
+                <button @click=${this.handleSubmit} class="cancel">Cancel</button>
+                <button @click=${this.handleSubmit} class="confirm">Confirm</button>
+            </div>
         </div>
       </div>
     `;
@@ -97,6 +100,9 @@ export class Confirm extends DialogCore {
 
 @customElement('component-prompt')
 export class Prompt extends DialogCore {
+  @state()
+  _header = '';
+
   @state()
   _promptMsg = '';
 
@@ -126,17 +132,18 @@ export class Prompt extends DialogCore {
     }
 
     if (this._inputText === '') {
-      this._errorMessage = "you cannot confirm empty string"
+      this._errorMessage = "you cannot confirm empty string";
     }
     else {
       this._closeDialog = true;
     }
   }
 
-  constructor(confirmMsg: string = 'alert') {
+  constructor(header:string, promptMsg: string) {
     super();
 
-    this._promptMsg = confirmMsg;
+    this._header = header;
+    this._promptMsg = promptMsg;
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -150,18 +157,19 @@ export class Prompt extends DialogCore {
 
   render() {
     return html`
-      <div id="prompt">
+      <div class="dialog">
         <div class="container">
-          <h1>${this._promptMsg}</h1>
+            <h1>${this._header}</h1>
+            <p>${this._promptMsg}</p>
 
-          <input type="text" id="text-input" autofocus />
-          
-          ${this._errorMessage && html`<h3 class="error">${this._errorMessage}</h3>`}
+            <input type="text" id="text-input" autofocus />
 
-          <div class="button-container">
-            <button @click=${this.handleSubmit} class="confirm">Yes</button>
-            <button @click=${this.handleSubmit} class="cancel">No</button>
-          </div>
+            ${this._errorMessage && html`<h3 class="error">${this._errorMessage}</h3>`}
+            
+            <div class="btn-container">
+                <button @click=${this.handleSubmit} class="cancel">Cancel</button>
+                <button @click=${this.handleSubmit} class="confirm">Confirm</button>
+            </div>
         </div>
       </div>
     `;
@@ -170,6 +178,8 @@ export class Prompt extends DialogCore {
 
 @customElement('component-alert')
 export class Alert extends DialogCore {
+  @state()
+  _header = "";
   @state()
   _alertMsg = '';
 
@@ -181,33 +191,28 @@ export class Alert extends DialogCore {
   }
 
   private handleSubmit(e: Event) {
-    const target = e.currentTarget as Element;
-
     this._closeDialog = true;
   }
 
-  constructor(confirmMsg: string = 'alert') {
+  constructor(header:string, alertMsg: string) {
     super();
 
-    this._alertMsg = confirmMsg;
+    this._header = header;
+    this._alertMsg = alertMsg;
   }
 
   render() {
     return html`
-      <div id="alert">
+      <div class="dialog">
         <div class="container">
-          <h1>${this._alertMsg}</h1>
-
-          <button @click=${this.handleSubmit}>Ok</button>
+            <h1>${this._header}</h1>
+            <p>${this._alertMsg}</p>
+            
+            <div class="btn-container">
+                <button @click=${this.handleSubmit} class="alert-confirm">ok</button>
+            </div>
         </div>
       </div>
     `;
-  }
-}
-
-@customElement("component-color-picker")
-export class ColorPicker extends DialogCore {
-  public returnValue() {
-    
   }
 }

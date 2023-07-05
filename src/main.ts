@@ -132,8 +132,8 @@ class AppProcess {
                 preload: path.join(__dirname, "app.preload.js")
             },
             resizable: false,
-            width: 370,
-            height: 700,
+            width: 390,
+            height: 730,
             alwaysOnTop: true
         });
 
