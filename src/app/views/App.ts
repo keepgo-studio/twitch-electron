@@ -17,24 +17,31 @@ import styles from "./App.scss";
 export const AppTag = "view-app";
 
 
-const createAnimation = (elem: Element) => {
+const showingAnimation = (elem: HTMLElement, type: "fadeIn" | "instant") => {
   elem.classList.add("show");
 
-  gsap.timeline()
-    .set(elem, {
-      display: "block"
-    })
-    .to(elem, {
-      ease: Expo.easeOut,
-      opacity: 1,
-      duration: 1,
-      delay: 1,
-      onComplete: () => {
-        elem.dispatchEvent(new CustomEvent("show-page"))
-      }
-    });
+  if (type === "fadeIn") {
+    gsap.timeline()
+      .set(elem, {
+        display: "block"
+      })
+      .to(elem, {
+        ease: Expo.easeOut,
+        opacity: 1,
+        duration: 1,
+        delay: 1,
+        onComplete: () => {
+          elem.dispatchEvent(new CustomEvent("show-page"))
+        }
+      });
+  }
+  else if (type === "instant") {
+    elem.style.display = "block";
+    elem.style.opacity = "1";
+    elem.classList.add("show");
+  }
 }
-const removeAnimation = (elem: Element, type: "scroll" | "fadeOut") => {
+const removingAnimation = (elem: HTMLElement, type: "scroll" | "fadeOut" | "instant") => {
   if (type === "scroll") {
     gsap.timeline()
       .to(elem, {
@@ -59,6 +66,11 @@ const removeAnimation = (elem: Element, type: "scroll" | "fadeOut") => {
       .set(elem, {
         display: "none"
       });
+  }
+  else if (type === "instant") {
+    elem.style.display = "none";
+    elem.style.opacity = "0";
+    elem.classList.remove("show");
   }
 }
 
@@ -127,6 +139,12 @@ class MainView extends LitElement {
     else if (e.data.type === "return-stream-channels") {
       this._streamList = e.data.data;
     }
+    
+    if (this._followList !== undefined && 
+      this._groupList !== undefined &&
+      this._streamList !== undefined) {
+        this._service.send("complete getting all data");
+      }
   }
 
   constructor() {
@@ -143,10 +161,10 @@ class MainView extends LitElement {
       AppMachine.withConfig({
         actions: {
           "create profile view": () => {
-            createAnimation(this.ViewProfile);
+            showingAnimation(this.ViewProfile, "fadeIn");
           },
           "remove profile view": () => {
-            removeAnimation(this.ViewProfile, "scroll");
+            removingAnimation(this.ViewProfile, "scroll");
             this.ViewProfile.setAttribute("loading", "false");
           },
           "get choosed user info from worker": (_, event) => {
@@ -192,16 +210,16 @@ class MainView extends LitElement {
             sendToWorker(message);
           },
           "create skeleton": () => {
-            createAnimation(this.ViewSkeleton);
+            showingAnimation(this.ViewSkeleton, "fadeIn");
           },
           "remove skeleton": () => {
-            removeAnimation(this.ViewSkeleton, "fadeOut");
+            removingAnimation(this.ViewSkeleton, "instant");
           },
           "create fbase auth view": () => {
-            createAnimation(this.ViewTwitchAuth);
+            showingAnimation(this.ViewTwitchAuth, "fadeIn");
           },
           "remove fbase auth view": () => {
-            removeAnimation(this.ViewTwitchAuth, "scroll")
+            removingAnimation(this.ViewTwitchAuth, "scroll")
           },
           "send connected": sendTo(APP_CHILD_ID, "check connection"),
           "sync followed list": () => {
@@ -214,10 +232,10 @@ class MainView extends LitElement {
             sendToWorker(message);
           },
           "create ui": () => {
-            createAnimation(this.ViewMain);
+            showingAnimation(this.ViewMain, "instant");
           },
           "remove ui": () => {
-            removeAnimation(this.ViewMain, "scroll");
+            removingAnimation(this.ViewMain, "scroll");
           },
           "get saved data": () => {
             const messageChannel: WebMessageForm<AppPostEvents> = {

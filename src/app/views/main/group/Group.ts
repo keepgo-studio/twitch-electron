@@ -60,7 +60,7 @@ class Group extends LitElement {
       },
       {
         root: this.bodyElem,
-        threshold: 0.2,
+        threshold: 0.1,
       }
     );
 
@@ -222,9 +222,11 @@ class Group extends LitElement {
 
             <div class="channel-info-container">
               <p class="channels"><b>${this.channels?.length}</b> channels</p>
-              <p class="live">
-                <b>${this.liveChannels?.length} online</b>
-              </p>
+              ${this.channels!.length > 0 ? html`
+                <p class="live">
+                  <b>${this.liveChannels?.length} online</b>
+                </p>
+              `:""}
             </div>
           </div>
         </div>

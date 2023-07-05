@@ -2,7 +2,7 @@
 
 #group {
   height: 100%;
-  padding: 20px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: column;
 }
@@ -15,7 +15,8 @@
 
   h3 {
     color: $gray;
-    font-size: 15px;
+    font-size: 14px;
+    margin-bottom: .5em;
   }
 
   .group-info {
@@ -25,7 +26,7 @@
     color: $white;
 
     .group-name {
-      font-size: 36px;
+      font-size: 28px;
       color: $white;
       border-radius: 6px;
     }
@@ -36,13 +37,13 @@
       align-items: end;
 
       .channels {
-        font-size: 13px;
+        font-size: 14px;
         color: $twitch-purple;
         margin-bottom: 4px;
       }
 
       .live {
-        font-size: 11px;
+        font-size: 12px;
         padding:3px 16px;
         border-radius: 999px;
         color: $white;
@@ -204,7 +205,7 @@
 
   button {
     width: 100%;
-    height: 50px;
+    height: 40px;
     background-color: $twitch-purple;
     border-radius: 8px;
     display: flex;
@@ -218,7 +219,7 @@
     }
   
     img {
-      width: 150px;
+      width: 120px;
     }
   }
 

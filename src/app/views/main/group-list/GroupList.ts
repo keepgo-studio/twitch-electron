@@ -11,14 +11,20 @@ import PlusSVG from "@public/plus_round.svg";
 
 const DURATION = 1;
 
-const openMacro = (header: Element, shadow:Element, maxHeight: number) => {
-  gsap
+let tlId: GSAPTimeline | undefined;
+
+const openMacro = (root: Element, shadow:Element, maxHeight: number) => {
+  if (tlId !== undefined) {
+    tlId.kill();
+  }
+
+  tlId = gsap
   .timeline()
   .set(shadow, {
     opacity: 0,
     display: "block"
   })
-  .to(header, {
+  .to(root, {
     y: maxHeight,
     ease: Elastic.easeOut,
     duration: DURATION,
@@ -27,13 +33,22 @@ const openMacro = (header: Element, shadow:Element, maxHeight: number) => {
     opacity: 1,
     ease: Expo.easeOut,
     duration: 0.3
-  }, "-=1");
+  }, "-=1")
+  .set(shadow, {
+    display:"block",
+    opacity: 1,
+    onComplete: () => tlId = undefined
+  });
 }
 
-const closeMacro = (header: Element, shadow:Element) => {
-  gsap
+const closeMacro = (root: Element, shadow:Element) => {
+  if (tlId !== undefined) {
+    tlId.kill();
+  }
+
+  tlId = gsap
   .timeline()
-  .to(header, {
+  .to(root, {
     y: 0,
     ease: Elastic.easeOut,
     duration: DURATION,
@@ -45,7 +60,8 @@ const closeMacro = (header: Element, shadow:Element) => {
   }, "-=1")
   .set(shadow, {
     opacity: 0,
-    display: "none"
+    display: "none",
+    onComplete: () => tlId = undefined
   });
 }
 
@@ -56,8 +72,8 @@ class GroupList extends LitElement {
   @property({ type: Array })
   groups?: Array<TGroup>;
 
-  @query("header")
-  header: HTMLElement;
+  @query("#group-list")
+  root: HTMLElement;
   
   @query(".shadow")
   shadow: HTMLElement;
@@ -69,7 +85,7 @@ class GroupList extends LitElement {
     super();
 
     this.addEventListener("fold", () => {
-      closeMacro(this.header, this.shadow);
+      closeMacro(this.root, this.shadow);
     })
   }
 
@@ -102,16 +118,15 @@ class GroupList extends LitElement {
     });
   }
 
-  protected updated(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
-    const container = this.header.querySelector(".container");
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+    const container = this.root.querySelector(".container");
     const maxHeight = container!.clientHeight;
-    const header = this.header;
+    const root = this.root;
     const shadow = this.shadow;
     const d = maxHeight / 5;
 
-    Draggable.create(header, {
+    Draggable.create(root, {
+      zIndexBoost: false,
       type: "y",
       bounds: {
         minY: 0,
@@ -122,18 +137,18 @@ class GroupList extends LitElement {
         
         if (direction === 'down') {
           if (this.y >= d) {
-            openMacro(header, shadow, maxHeight);
+            openMacro(root, shadow, maxHeight);
           }
           else {
-            closeMacro(header, shadow);
+            closeMacro(root, shadow);
           }
         } 
         else if (direction === 'up'){
           if (this.y <= d * 4) {
-            closeMacro(header, shadow);
+            closeMacro(root, shadow);
           }
           else {
-            openMacro(header, shadow, maxHeight);
+            openMacro(root, shadow, maxHeight);
           }
         }
       },
@@ -161,6 +176,7 @@ class GroupList extends LitElement {
     })
 
     Draggable.create(ul, {
+      zIndexBoost: false,
       type: "scrollLeft",
       edgeResistance: 0.65,
       throwProps: true,
@@ -175,17 +191,17 @@ class GroupList extends LitElement {
     });
   }
 
-  openHeader() {
-    const container = this.header.querySelector(".container");
+  openListener() {
+    const container = this.root.querySelector(".container");
     const maxHeight = container!.clientHeight;
-    const dragInstance = Draggable.get(this.header);
+    const dragInstance = Draggable.get(this.root);
 
     if (dragInstance) {
       if (dragInstance.y >= maxHeight - 5) {
-        closeMacro(this.header, this.shadow);
+        closeMacro(this.root, this.shadow);
       }
-      else {
-        openMacro(this.header, this.shadow, maxHeight);
+      else if (0 <= dragInstance.y && dragInstance.y < maxHeight - 5){
+        openMacro(this.root, this.shadow, maxHeight);
       }
     }
   }
@@ -199,8 +215,8 @@ class GroupList extends LitElement {
     );
 
     return html`
-      <header>
-        <div @click=${this.openHeader} class="drag-button">
+      <section id="group-list">
+        <div @click=${this.openListener} class="drag-button">
           <i></i>
         </div>
 
@@ -246,7 +262,7 @@ class GroupList extends LitElement {
             </div>
           </div>
         </div>
-      </header>
+      </section>
 
       <div class="shadow"></div>
 

@@ -53,7 +53,7 @@ class TwitchAuthView extends LitElement {
           opacity: 0,
           ease: Expo.easeOut,
           duration: 1,
-        }, "-=0.5")
+        }, "-=0.7")
         .set(this.afterElem, {
           zIndex: 1,
         })
@@ -66,7 +66,7 @@ class TwitchAuthView extends LitElement {
           opacity: 0,
           ease: Expo.easeOut,
           duration: 1,
-        })
+        }, "-=0.5")
         .set({}, { 
           delay: 1, onComplete: () => {
             this.authService?.send({

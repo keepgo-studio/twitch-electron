@@ -1,5 +1,6 @@
 import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
+import { Expo, gsap } from "gsap";
 
 import styles from "./BottomNavbar.scss";
 
@@ -27,12 +28,20 @@ const iconInfo = {
   "syncFromTwitch": 20
 }
 
+let shadowGsapId: GSAPTimeline | undefined;
+
 @customElement("view-bottom-navbar")
 class BottomNavbar extends LitElement {
   static styles = unsafeCSS(styles);
 
   @property({ type: Object })
   userInfo?: TUserInfo;
+
+  @query("nav")
+  root: Element;
+
+  @query(".shadow")
+  shadow: Element;
 
   @query(".container ul")
   menuListUl: Element;
@@ -44,17 +53,50 @@ class BottomNavbar extends LitElement {
     this.dispatchEvent(new CustomEvent(eventType));
   }
 
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-      [...this.menuListUl.querySelectorAll("li:not(.goHome)")].forEach(li => {
-        const hoverDiv = li.querySelector(".hover-effect")! as HTMLElement;
-        const iconTarget = li.className as IconTypes;
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {  
+    this.root.addEventListener("mouseenter", () => {
+      if (shadowGsapId) shadowGsapId.kill();
 
-        hoverDiv.style.width = `${iconInfo[iconTarget]}px`;
-      });
+      shadowGsapId = gsap.timeline()
+      .set(this.shadow, {
+        display: "block",
+        opacity: 0,
+      })
+      .to(this.shadow, {
+        opacity: 1,
+        duration: 0.5,
+        ease: Expo.easeOut,
+        onComplete: () => shadowGsapId = undefined
+      })
+    });
+    this.root.addEventListener("mouseleave", () => {
+      if (shadowGsapId) shadowGsapId.kill();
+      
+      shadowGsapId = gsap.timeline()
+      .to(this.shadow, {
+        opacity: 0,
+        duration: 0.5,
+        ease: Expo.easeOut,
+      })
+      .set(this.shadow, {
+        display: "none",
+        opacity: 0,
+        onComplete: () => shadowGsapId = undefined
+      })
+    });
+
+    [...this.menuListUl.querySelectorAll("li:not(.goHome)")].forEach(li => {
+      const hoverDiv = li.querySelector(".hover-effect")! as HTMLElement;
+      const iconTarget = li.className as IconTypes;
+  
+      hoverDiv.style.width = `${iconInfo[iconTarget]}px`;
+    });
   }
 
   render() {
     return html`
+      <div class="shadow"></div>
+
       <nav>
         <div class="container">
           <ul>

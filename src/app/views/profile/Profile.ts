@@ -80,7 +80,7 @@ class Profile extends LitElement {
           opacity: 1,
           duration: 0.7,
           ease: Expo.easeOut,
-          delay: 0.5,
+          delay: 0.3,
         })
         .to(this.logo, {
           top: logoComp.y,

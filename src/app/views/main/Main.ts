@@ -2,6 +2,7 @@ import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 import { Alert, Prompt } from "@views/components/Dialog";
+import { Expo, gsap } from "gsap";
 
 import "@views/main/group-list/GroupList"
 import "@views/main/group/Group"
@@ -30,6 +31,8 @@ let deletedChannel: TChannel | undefined = undefined;
 class Main extends LitElement {
   static styles = unsafeCSS(styles);
 
+  private _preventSyncMultiples = false;
+
   @property({ type: Array})
   followList?: Array<TChannel>
   @property({ type: Array})
@@ -53,6 +56,9 @@ class Main extends LitElement {
 
   @query("view-group-list")
   ViewGroupList: Element;
+
+  @query(".loading")
+  LoadingDiv: Element;
 
   private _connectedChannels = [];
 
@@ -114,6 +120,20 @@ class Main extends LitElement {
       this.followList = [...syncChannels];
       this.groupList = [...syncGroups];
       this.streamList = [...syncStreams];
+
+      gsap
+      .timeline()
+      .to(this.LoadingDiv, {
+        opacity: 0,
+        duration: 0.5,
+        ease: Expo.easeOut
+      })
+      .set(this.LoadingDiv, {
+        display: "none",
+        onComplete: () => {
+          this._preventSyncMultiples = true
+        }
+      })
     }
   }
 
@@ -251,7 +271,22 @@ class Main extends LitElement {
     }
     sendToWorker(message);
   }
+
   syncFromTwitchListener() {
+    if (this._preventSyncMultiples) return;
+
+    gsap
+    .timeline()
+    .set(this.LoadingDiv, {
+      display: "block",
+      opacity: 0
+    })
+    .to(this.LoadingDiv, {
+      opacity: 1,
+      duration: 0.5,
+      ease: Expo.easeOut
+    });
+    
     const message: WebMessageForm<MainPostEvents> = {
       origin: "view-app",
       type: "sync-twitch-followed-list",
@@ -292,6 +327,13 @@ class Main extends LitElement {
           @syncFromTwitch=${this.syncFromTwitchListener}
           .userInfo=${this.userInfo}
         ></view-bottom-navbar>
+
+        <div class="loading">
+          <div class="center">
+            <component-loading
+            .width=${"16vw"}></component-loading>
+          </div>
+        </div>
       </section>
     `;
   }

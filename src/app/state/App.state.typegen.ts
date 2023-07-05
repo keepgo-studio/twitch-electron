@@ -54,14 +54,14 @@ export interface Typegen1 {
           "create fbase auth view": "token is";
 "create profile view": "back to profile" | "error.platform.fbaseauth" | "xstate.init";
 "create skeleton": "done.invoke.fbaseauth" | "token is";
-"create ui": "first complete";
+"create ui": "complete getting all data";
 "get choosed user info from worker": "user choosed";
 "get saved data": "first complete";
 "get user info from auth": "done.invoke.fbaseauth";
 "remove fbase auth view": "done.invoke.fbaseauth";
 "remove profile view": "token is" | "xstate.stop";
-"remove skeleton": "first complete";
-"remove ui": "back to profile" | "close" | "xstate.stop";
+"remove skeleton": "complete getting all data";
+"remove ui": "back to profile" | "close" | "complete getting all data" | "xstate.stop";
 "send connected": "connection";
 "sync followed list": "done.invoke.fbaseauth" | "token is";
         };

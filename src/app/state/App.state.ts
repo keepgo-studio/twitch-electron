@@ -86,7 +86,8 @@ export type AppEvents =
 | { type: "connection" }
 | { type: "first complete" }
 | { type: "back to profile"}
-| { type: "close" };
+| { type: "close" }
+| { type: "complete getting all data" };
 
 /**
  * loading state 일 때 skeleton html보여지게하자
@@ -97,7 +98,7 @@ export type AppEvents =
  * 이유는 그렇게 json 데이터가 크지 않을거 같음 (나중에 생각)
  */
 export const AppMachine = createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EANgAcATgxNRAJgCsc8QEZJTBSoDMWgDQgAnoi0B2aSbmiFAFiYrrW8QtEmTAXzf60mHPiKkKGnoGFTYkEE5uXn5BEQQVOQcMBIUmORNreXEXfSMERzkMOSYtJklUrRVxLQVJDy90DAAzACNkWDAAQQBXbAALQgh+MAxaSgA3chHW9rBkXr7mMI4uHj4BcLi5SxkTVSYTbVFRLXSFXMRVDGtJW-FrcTSS4+t6kG9mto6e-sIwPDwJDwGFQABtkNgmkCALafWbzfpLQSRNYxTaIbaiXb7Q5aY6nEznQwY0QqIolBIacRySROY5vD4zb4LQgAY34lDArOilCR4RRPNiiGs1gwri01mK6WpTCeoguCEU4gwpgqChM8gUWoyDMaoJIUBgEDolEITVoeBw1HZ0LBYGwYD5Kyi6yF8RMZXJlTueNSkoVEqYMlq4hMplDezqnnejVoEFBYDZ+o6Toiq0F6MVKhKYpKNOqIdpemJ+WsChkeIcCkc92yLl1mDjCcIbVZZGopGoqEB5oTqYFrszKg90mK3qLViY-pLKhsGGykg1J0s9ge4gbGAA7sgeIRuh08Na+iQuJB++nB6A4hJpLJFMo1BptMW8mcMKTFycy8pxE4PNHKBICA4EEbxkQvNEr0QABaLQiksdVFzkYdbjMac8mgrFZVlB5Mg0URZBqDdfAIcCXUg4REHUcsUg0Wx0lnEoA0yL0yj2SoCTLDcmS6BYyNRDYoIQawTADWoVQfBJQxUYd1Q3fVDUgE1+IzIT7A1DBykqMxtjYpQAx2PZRDLB5V0JFQNybMAVMvSj4lDLF7AOGlyiJPJSlvSsFGqFcdHXaMPgdPBoTGCFrP5CDBLs3Ty2rbRF1lJw1GsZjRWUYzREkSUtEkKoFA3bceBsii4hFUU7GcMs0MkbY5AVOQ8VzSo71cssp3-NwgA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QEMAOqB0sAuyBO2AxNgPYDWYAdgAQCWsA2gAwC6ioqJst2tJl7EAA9EANgAcATgxNRAJgCsc8QEZJTBSoDMWgDQgAnoi0B2aSbmiFAFiYrrW8QtEmTAXzf60mHPiKkKGnoGFTYkEE5uXn5BEQQVOQcMBIUmORNreXEXfSMERzkMOSYtJklUrRVxLQVJDy90DAAzACNkWDAAQQBXbAALQgh+MAxaSgA3chHW9rBkXr7mMI4uHj4BcLi5SxkTVSYTbVFRLXSFXMRVDGtJW-FrcTSS4+t6kG9mto6e-sIwPDwJDwGFQABtkNgmkCALafWbzfpLQSRNYxTaIbaiXb7Q5aY6nEznQwY0QqIolBIacRySROY5vD4zb4LQgAY34lDArOilCR4RRPNiiGs1gwri01mK6WpTCeoguCEU4gwpgqChM8gUWoyDMaoJIUBgEDolEITVoeBw1HZ0LBYGwYD5Kyi6yF8RMZXJlTueNSkoVEqYMlq4hMplDezqnnejVoEFBYDZ+o6Toiq0F6MVKhKYpKNOqIdpemJ+WsChkeIcCkc92yLl1mDjCcIbVZZGopGoqEB5oTqYFrszKg90mK3qLViY-pLKhsGGykg1J0s9ge4gbGAA7sgeIRuh08Na+iQuJB++nB6A4hJpLJFMo1BptMW8mcMKTFycy8pxE4N03ExtO0HWoGBsF4SgoGoZBQVBagIAhZBzxdNEr0QKpF3fEpJHsKoa2UBUbDJSQThqSUaRFUwPGjSgSAgOBBG8ZEL1Q4REAAWi0IpLHVRc5GHW4zGnPJ2KxWVZQKUQbkkRxFw3XwCGYlCNjQhB1HLFINFsdJZxKANMi9Mo9kqAkyw3JkugWJTURUtiEGsEwA1qFUHwSUMVGHdUN31Q1IBNayM1U+wNQwcpKjMbYjKUAMdj2KSbFUEVCRUf94zAALLzsqoQvsA4aXKIk8lKW9KwUaoVx0ddow+B08GhMYIXS-kWNsrZinLattEXWUnDUax9NFZQpNESRJS0HC-2qxptx4DLWLiEVRTsZwyyEyRtjkBU5DxXNKjvAqyynai3CAA */
   id: "app",
 
   predictableActionArguments: true,
@@ -163,10 +164,15 @@ export const AppMachine = createMachine({
     idle: {
       on: {
         close: "terminate",
-        "back to profile": "wait"
+        "back to profile": "wait",
+
+        "complete getting all data": {
+          target: "idle",
+          internal: true,
+          actions: ["remove skeleton", "create ui"]
+        }
       },
 
-      entry: ["remove skeleton", "create ui"],
       exit: "remove ui"
     },
 
