@@ -9,7 +9,8 @@
     "watch-hot-reload": "gulp hot-reload",
     "watch-electron": "electron dist/main.js",
     "watch-gulp": "gulp watch",
-    "start": "gulp build && concurrently \"npm:watch-*\" --kill-others"
+    "start": "gulp build && concurrently \"npm:watch-*\" --kill-others",
+    "bundle-analyze": "gulp build --mode dev"
   },
   "keywords": [],
   "author": "",
@@ -33,12 +34,14 @@
     "typescript": "^5.0.4",
     "vinyl-named": "^1.1.0",
     "webpack": "^5.82.0",
+    "webpack-bundle-analyzer": "^4.9.0",
     "webpack-stream": "^7.0.0"
   },
   "dependencies": {
     "gsap": "^3.12.2",
     "idb": "^7.1.1",
     "lit": "^2.7.4",
-    "xstate": "^4.34.0"
+    "xstate": "^4.34.0",
+    "yargs": "^17.7.2"
   }
 }

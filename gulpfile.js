@@ -4,8 +4,9 @@ const webpack = require("webpack-stream");
 const named = require("vinyl-named");
 const browserSync = require("browser-sync").create();
 const { exec } = require("child_process");
+const argv = require("yargs").argv;
 
-const esConfig = require("./src/app/webpack.config.js");
+const esConfig = require("./src/app/webpack.config.js")(argv);
 
 // const ts = require("gulp-typescript");
 // const nodeProject = ts.createProject("./src/tsconfig.json");

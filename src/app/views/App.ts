@@ -3,7 +3,7 @@ import { customElement, query, state } from "lit/decorators.js";
 import { Interpreter, interpret, sendTo } from "xstate";
 import { APP_CHILD_ID, AppMachine, FbaseAuthEvents } from "@state/App.state";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
-import { Elastic, Expo, gsap } from "gsap";
+import { Expo, gsap } from "gsap";
 
 import "@views/profile/Profile";
 import "@views/skeleton/Skeleton";
