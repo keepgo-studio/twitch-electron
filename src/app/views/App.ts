@@ -107,6 +107,14 @@ class MainView extends LitElement {
   @query("view-twitch-auth")
   ViewTwitchAuth: HTMLElement;
 
+  runMain() {
+    if (this._followList !== undefined && 
+      this._groupList !== undefined &&
+      this._streamList !== undefined) {
+        this._service.send("complete getting all data");
+      }
+  }
+
   appWorkerListener(e: MessageEvent<WebMessageForm<WorkerPostEvents>>) {
     if (e.data.type === "return-userinfo") {
       this._userInfo = { ...e.data.data };
@@ -132,19 +140,16 @@ class MainView extends LitElement {
     }
     else if (e.data.type === "return-followed-list") {
       this._followList = e.data.data;
+      this.runMain();
     }
     else if (e.data.type === "return-group-list") {
       this._groupList = e.data.data;
+      this.runMain();
     }
     else if (e.data.type === "return-stream-channels") {
       this._streamList = e.data.data;
+      this.runMain();
     }
-    
-    if (this._followList !== undefined && 
-      this._groupList !== undefined &&
-      this._streamList !== undefined) {
-        this._service.send("complete getting all data");
-      }
   }
 
   constructor() {

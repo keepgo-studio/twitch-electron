@@ -92,6 +92,9 @@ components which are used as reusable components =>
   @customElemtn("component-*")
 ```
 
+## caution
+
+addWorkerListner should strictly type checking needed
 
 ### Needs
 
