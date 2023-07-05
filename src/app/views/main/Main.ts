@@ -286,7 +286,7 @@ class Main extends LitElement {
 
         <view-bottom-navbar
           @aot=${this.aotListener}
-          @changeGroupeName=${this.changeGroupNameListener}
+          @changeGroupName=${this.changeGroupNameListener}
           @goHome=${this.goHomeListener}
           @changeColor=${this.chagneColorListener}
           @syncFromTwitch=${this.syncFromTwitchListener}
