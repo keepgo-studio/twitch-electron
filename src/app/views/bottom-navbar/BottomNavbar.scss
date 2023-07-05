@@ -1,0 +1,132 @@
+@import "/src/app/utils/shared.scss";
+
+:host {
+  --outer-duration: 250ms;
+  --inner-duration: 150ms;
+}
+
+nav {
+
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $black;
+
+  .container {
+    width: 140px;
+    height: 6px;
+    background-color: $white;
+    border-radius: 999px;
+    transition: ease var(--outer-duration);
+    overflow: hidden;
+
+    ul {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.3fr 1fr 1fr;
+      align-items: center;
+      justify-items: center;
+      width: 100%;
+      height: 100%;
+
+      li {
+        display:block;
+        opacity: 0;
+        transition: ease var(--inner-duration);
+        fill: none;
+        
+        component-svg {
+          transition: ease var(--inner-duration);
+          opacity: 0;
+        }
+      }
+      li.goHome {
+        width: 100%;
+        height: 100%;
+        position: relative;
+  
+        .home-wrapper {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: $white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: ease var(--outer-duration);
+          width: 0px;
+          height: 0px;
+          opacity: 0;
+
+          fill: $black;
+        }
+      }
+    }
+
+  }
+
+  .hover-effect {
+    position: absolute;
+    background-color: $twitch-purple;
+    height: 3px;
+    border-radius: 999px;
+    bottom: 15%;
+    left: 50%;
+    transform: translate(-50%, 10px);
+    transition: ease 300ms;
+    opacity: 0;
+  }
+}
+
+
+nav:hover {
+  .container {
+    background-color: $light-black;
+    width: 300px;
+    padding: 0 10px;
+    height: 65px;
+    transform: translateY(-50%);
+    overflow: visible;
+
+    li {
+      opacity: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      fill: $white;
+
+      component-svg {
+        opacity: 1;
+      }
+
+      &:hover {
+        fill: $twitch-purple;
+
+        .hover-effect {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+    }
+    
+    li.goHome {
+      .home-wrapper {
+        width: 70px;
+        height: 70px;
+        opacity: 1;
+      }
+
+      &:hover .home-wrapper{
+        background-color: $twitch-purple;
+        fill: $white;
+      }
+    }
+  }
+}
