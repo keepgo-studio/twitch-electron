@@ -89,7 +89,8 @@ nav {
     border-radius: 999px;
     bottom: 15%;
     left: 50%;
-    transform: translate(-50%, 10px);
+    transform: translateX(-50%);
+    top: 10px;
     transition: ease 300ms;
     opacity: 0;
   }
@@ -125,7 +126,7 @@ nav:hover {
 
         .hover-effect {
           opacity: 1;
-          transform: translate(-50%, 0);
+          top: 0;
         }
       }
     }
