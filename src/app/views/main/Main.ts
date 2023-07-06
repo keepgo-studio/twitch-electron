@@ -172,11 +172,6 @@ class Main extends LitElement {
     addWorkerListener(this.mainWorkerLisetener.bind(this));
   }
 
-  connectSocketForChannel(channel: TChannel) {
-    // TODO: socket connection for getting live event
-    // this._connectedChannels
-  }
-
   protected willUpdate(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
     if (_changedProperties.has("userInfo")) {
       window.api.syncAot(this.userInfo!.AOT);

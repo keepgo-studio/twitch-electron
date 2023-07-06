@@ -95,11 +95,3 @@ components which are used as reusable components =>
 ## caution
 
 addWorkerListner should strictly type checking needed
-
-### Needs
-
-Websocket subscription for each broadcaster
-
-publish app
-
-websites for deploy and contact

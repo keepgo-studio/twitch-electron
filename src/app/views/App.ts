@@ -80,6 +80,8 @@ class MainView extends LitElement {
 
   private _service;
 
+  private _syncIntervalId?: ReturnType<typeof setInterval>;
+
   @state()
   _state;
   @state()
@@ -108,6 +110,8 @@ class MainView extends LitElement {
   ViewTwitchAuth: HTMLElement;
 
   runMain() {
+    if (this.ViewMain.classList.contains("show")) return;
+
     if (this._channelList !== undefined && 
       this._groupList !== undefined &&
       this._streamList !== undefined) {
@@ -149,6 +153,7 @@ class MainView extends LitElement {
     else if (e.data.type === "return-stream-channels") {
       this._streamList = e.data.data;
       this.runMain();
+      console.log("sync streams");
     }
   }
 
@@ -241,16 +246,15 @@ class MainView extends LitElement {
           },
           "remove ui": () => {
             removingAnimation(this.ViewMain, "scroll");
+            if (this._syncIntervalId) {
+              clearInterval(this._syncIntervalId);
+              this._syncIntervalId = undefined;
+            }
           },
           "get saved data": () => {
             const messageChannel: WebMessageForm<AppPostEvents> = {
               origin: "view-app",
               type: "get-followed-list"
-            }
-            const messageStream: WebMessageForm<AppPostEvents> = {
-              origin: "view-app",
-              type: "get-stream-list",
-              data: this._userInfo
             }
             const messageGroup: WebMessageForm<AppPostEvents> = {
               origin: "view-app",
@@ -258,8 +262,16 @@ class MainView extends LitElement {
             }
 
             sendToWorker(messageChannel);
-            sendToWorker(messageStream);
             sendToWorker(messageGroup);
+
+            this._syncIntervalId = setInterval(() => {
+              const messageStream: WebMessageForm<AppPostEvents> = {
+                origin: "view-app",
+                type: "get-stream-list",
+                data: this._userInfo
+              }
+              sendToWorker(messageStream);
+            }, 60000);
           }
         },
         guards: {
