@@ -22,7 +22,7 @@ class Svg extends LitElement {
     return html`
       <style>
         svg {
-          display: inline-block;
+          display: block;
           width: ${this.width}px;
           height: ${this.height}px;
         }

@@ -77,6 +77,7 @@
         background-color: $black-ops;
         overflow-x: auto;
         overflow-y: hidden;
+        display: flex;
         align-items: center;
         white-space: nowrap;
 
@@ -101,7 +102,7 @@
           position: relative;
           display: inline-flex;
           flex-direction: column;
-          margin: 12px;
+          margin: 0 8px;
           padding-left: 20px;
           padding-right: 10px;
           cursor: pointer;
@@ -128,6 +129,24 @@
             padding: 5px 0;
             z-index: 1;
           }
+
+          .remove-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            transform: translate(40%, -40%);
+            fill: $twitch-purple;
+            opacity: 0;
+            pointer-events: none;
+            transition: ease 300ms opacity;
+            cursor: pointer;
+            background-color: $white;
+            border-radius: 50%;
+
+            &:hover {
+              filter: brightness(0.7);
+            }
+          }
           
           &:hover  {
             h3, p {
@@ -135,6 +154,11 @@
             }
             .box {
               width: 100%;
+            }
+            .remove-btn {
+              opacity: 1;
+              z-index: 999;
+              pointer-events: auto;
             }
           }
         }

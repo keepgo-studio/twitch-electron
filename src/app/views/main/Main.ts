@@ -1,7 +1,7 @@
 import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
-import { Alert, Prompt } from "@views/components/Dialog";
+import { Alert, Confirm, Prompt } from "@views/components/Dialog";
 import { Expo, gsap } from "gsap";
 
 import "@views/main/group-list/GroupList"
@@ -35,7 +35,7 @@ class Main extends LitElement {
   private _preventSyncMultiples = false;
 
   @property({ type: Array})
-  followList?: Array<TChannel>
+  channelList?: Array<TChannel>
   @property({ type: Array})
   groupList?: Array<TGroup>
   @property({ type: Array})
@@ -67,6 +67,11 @@ class Main extends LitElement {
     const eventType = e.data.type;
     
     if (eventType === "result-add-new-group") {
+      if (e.data.data === undefined) {
+        await new Alert("Error","already exist group name").show();
+        return;
+      }
+
       const { groupName, allGroups } = e.data.data;
 
       this.groupList = [ ...allGroups ];
@@ -91,7 +96,7 @@ class Main extends LitElement {
       this.groupList![idx!].name = newName;
       this._currentGroupId = newName;
 
-      this.followList = [...newChannels];
+      this.channelList = [...newChannels];
       this.groupList = [ ...this.groupList! ];
     }
     else if (eventType === "result-changing-group-color") {
@@ -105,20 +110,20 @@ class Main extends LitElement {
     else if (eventType ==="result-remove-channel-from-group") {
       const { channel, group } = e.data.data;
 
-      const cidx = this.followList?.findIndex(_channel => _channel.broadcaster_id === channel.broadcaster_id);
+      const cidx = this.channelList?.findIndex(_channel => _channel.broadcaster_id === channel.broadcaster_id);
 
       const gidx = this.groupList?.findIndex(_group => _group.name === group.name);
 
-      this.followList![cidx!] = channel;
+      this.channelList![cidx!] = channel;
 
       this.groupList![gidx!] = group;
-      this.followList = [...this.followList!];
+      this.channelList = [...this.channelList!];
       this.groupList = [...this.groupList!];
     }
     else if (eventType === "result-sync-twitch-followed-list") {
       const { syncChannels, syncGroups, syncStreams } = e.data.data;
 
-      this.followList = [...syncChannels];
+      this.channelList = [...syncChannels];
       this.groupList = [...syncGroups];
       this.streamList = [...syncStreams];
 
@@ -132,9 +137,19 @@ class Main extends LitElement {
       .set(this.LoadingDiv, {
         display: "none",
         onComplete: () => {
-          this._preventSyncMultiples = true
+          this._preventSyncMultiples = false
         }
       })
+    }
+    else if (eventType === "result-removing-group") {
+      const { groupId, groups, channels } = e.data.data;
+
+      this.channelList = [...channels];
+      this.groupList = [...groups];
+
+      if (groupId === this._currentGroupId) {
+        this._currentGroupId = "all";
+      }
     }
   }
 
@@ -143,15 +158,15 @@ class Main extends LitElement {
 
     window.api.onFollowEventListener((type, targetId) => {      
       if (type === "FollowButton_FollowUser") {
-        this.followList!.push(deletedChannel!);
+        this.channelList!.push(deletedChannel!);
       }
       else if (type === "FollowButton_UnfollowUser") {
-        const index = this.followList!.findIndex(_channel => _channel.broadcaster_id === targetId)!;
-        deletedChannel = this.followList![index];
-        this.followList!.splice(index, 1);
+        const index = this.channelList!.findIndex(_channel => _channel.broadcaster_id === targetId)!;
+        deletedChannel = this.channelList![index];
+        this.channelList!.splice(index, 1);
       }
 
-      this.followList = [...this.followList!];
+      this.channelList = [...this.channelList!];
     })
 
     addWorkerListener(this.mainWorkerLisetener.bind(this));
@@ -173,7 +188,7 @@ class Main extends LitElement {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    this.shadowRoot!.addEventListener("click", (e) => {
+    this.shadowRoot!.addEventListener("mousedown", (e) => {
       const target = e.target as Element;
 
       if (target.tagName !== "VIEW-GROUP-LIST") {
@@ -186,6 +201,20 @@ class Main extends LitElement {
     const groupId = e.detail;
 
     this._currentGroupId = groupId;
+  }
+
+  async removeGroupListener(e: CustomEvent) {
+    const groupId = e.detail;
+    const response = await new Confirm(`Remove ${groupId}`, "Do you really want to remove this group?").show();
+
+    if (!response) return;
+
+    const message: WebMessageForm<MainPostEvents> = {
+      origin: "view-main",
+      type: "remove-group",
+      data: groupId
+    }
+    sendToWorker(message);
   }
 
   async addNewGroupListener(e: CustomEvent) {
@@ -204,7 +233,7 @@ class Main extends LitElement {
   playListener(e: CustomEvent) {
     const channelId = e.detail;
 
-    this._playInfo = this.followList?.find(_channel => _channel.broadcaster_id === channelId);
+    this._playInfo = this.channelList?.find(_channel => _channel.broadcaster_id === channelId);
 
     if (this._playInfo) window.api.openPlayer(this._playInfo);
   }
@@ -212,7 +241,7 @@ class Main extends LitElement {
   syncListener(e: CustomEvent) {
     const { channels, groups } = e.detail;
 
-    this.followList = [...channels];
+    this.channelList = [...channels];
     this.groupList = [...groups];
   }
 
@@ -285,6 +314,8 @@ class Main extends LitElement {
   syncFromTwitchListener() {
     if (this._preventSyncMultiples) return;
 
+    this._preventSyncMultiples = true;
+
     gsap
     .timeline()
     .set(this.LoadingDiv, {
@@ -316,6 +347,7 @@ class Main extends LitElement {
         <view-group-list 
           @addNewGroup=${this.addNewGroupListener}
           @changeGroup=${this.changeGroupListener}
+          @removeGroup=${this.removeGroupListener}
           .groups=${this.groupList}
         ></view-group-list>
 
@@ -324,7 +356,7 @@ class Main extends LitElement {
             @play=${this.playListener}
             @sync=${this.syncListener}
             .group=${this._currentGroup}
-            .channels=${this.followList}
+            .channels=${this.channelList}
             .liveChannels=${this.streamList}
           ></view-group>
         </main>

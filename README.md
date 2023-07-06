@@ -98,10 +98,6 @@ addWorkerListner should strictly type checking needed
 
 ### Needs
 
-⭐️**Group removing feature**⭐️
-
-Error handlig needed if group name didn't exist in idb
-
 Websocket subscription for each broadcaster
 
 publish app

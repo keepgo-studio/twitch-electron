@@ -147,8 +147,15 @@ export class ViewAppHandler extends ViewHandler {
               } as TChannel;
             }
 
-            const group = await tx.store.get(findChannel.group_id);
-            group!.channels.push(findChannel.broadcaster_id);
+            let group = await tx.store.get(findChannel.group_id);
+
+            if (group === undefined) {
+              group = await tx.store.get("etc");
+              findChannel.group_id = "etc";
+            }
+            else {
+              group!.channels.push(findChannel.broadcaster_id);
+            }
             await tx.store.put(group!, group!.name);
 
             return findChannel;
@@ -483,6 +490,49 @@ export class ViewMainHandler extends ViewHandler {
           },
         };
         sendToMainThread(message);
+      } else if (eventType === "remove-group") {
+        const groupId = e.data.data;
+
+        const channelTx = DB.userDB!.transaction("Channels", "readwrite");
+        let ccursor = await channelTx.store.openCursor();
+
+        const toEtcChannelsId = [];
+        while (ccursor) {
+          if (ccursor.value.group_id === groupId) {
+            toEtcChannelsId.push(ccursor.key);
+            ccursor.value.group_id = "etc";
+            await ccursor.update(ccursor.value);
+          }
+          ccursor = await ccursor.continue();
+        }
+        
+        const groupTx = DB.userDB!.transaction("Groups", "readwrite");
+        await groupTx.store.delete(groupId);
+        const etc = await groupTx.store.get("etc");
+        etc!.channels = [...etc!.channels, ...toEtcChannelsId];
+        await groupTx.store.put(etc!, "etc");
+
+        const data = await Promise.all([
+          (async () => {
+            const gtx = DB.userDB!.transaction("Groups", "readonly");
+            return await gtx.store.getAll();
+          })(),
+          (async () => {
+            const ctx = DB.userDB!.transaction("Channels", "readonly");
+            return await ctx.store.getAll();
+          })()
+        ])
+
+        const message: WebMessageForm<WorkerPostEvents> = {
+          origin: "worker",
+          type: "result-removing-group",
+          data: {
+            groupId,
+            groups: data[0],
+            channels: data[1]
+          },
+        };
+        sendToMainThread(message);
       } else if (eventType === "sync-twitch-followed-list") {
         const { access_token, current_user_id } = e.data.data as TUserInfo;
 
@@ -525,7 +575,10 @@ export class ViewMainHandler extends ViewHandler {
 
         const channels = await channelsGetTx.store.getAll();
 
-        const needThumbnailChanels: Array<string> = [];
+        const needThumbnailChanels: Array<{
+          key: "id",
+          val: string
+        }> = [];
 
         const syncChannels: Array<TChannel> = await Promise.all(
           followList.map(async (_channel) => {
@@ -541,7 +594,10 @@ export class ViewMainHandler extends ViewHandler {
               etcGroup!.channels.push(_channel.broadcaster_id);
               tx.store.put(etcGroup!, "etc");
 
-              needThumbnailChanels.push(_channel.broadcaster_id);
+              needThumbnailChanels.push({
+                key: "id",
+                val: _channel.broadcaster_id
+              });
 
               return {
                 broadcaster_id: _channel.broadcaster_id,
@@ -553,8 +609,14 @@ export class ViewMainHandler extends ViewHandler {
               } as TChannel;
             }
 
-            const group = await tx.store.get(findChannel.group_id);
-            group!.channels.push(findChannel.broadcaster_id);
+            let group = await tx.store.get(findChannel.group_id);
+            if (group === undefined) {
+              group = await tx.store.get("etc");
+              findChannel.group_id = "etc";
+            }
+            else {
+              group!.channels.push(findChannel.broadcaster_id);
+            }
             await tx.store.put(group!, group!.name);
 
             return findChannel;
@@ -572,9 +634,42 @@ export class ViewMainHandler extends ViewHandler {
           })
         );
 
+        if (needThumbnailChanels.length > 0) {
+          const url = parseUrl(`${FBASE_FUNCTION_URL}/getUserInfo`, needThumbnailChanels);
+          const data: Array<{
+            id: BroadcasterId;
+            offline_image_url: string,
+            profile_image_url: string
+          }>= await fetch(
+              url,
+              {
+                method: "GET",
+                headers: {
+                  access_token: access_token!,
+                },
+              }
+            )
+              .then((res) => res.json())
+              .then((data) => data["user_info"].data)
+              .catch(() => ([{
+                id: "",
+                offline_image_url: "",
+                profile_image_url: ""
+              }]));
+          
+          await Promise.all(data.map(async _user => {
+            const tx = DB.userDB!.transaction("Channels", "readwrite");
+            const channel = await tx.store.get(_user.id);
+
+            if (channel) {
+              channel.profile_image_url = _user.profile_image_url;
+              await tx.store.put(channel, _user.id);
+            }
+          }))
+        }
+
         const gtx = DB.userDB!.transaction("Groups", "readonly");
         const syncGroups = await gtx.store.getAll();
-
 
         const { stream_list } = await fetch(
           `${FBASE_FUNCTION_URL}/getStreamsList`,

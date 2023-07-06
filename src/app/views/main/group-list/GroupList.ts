@@ -8,6 +8,8 @@ import { Elastic, Expo, gsap } from "gsap";
 import styles from "./GroupList.scss";
 
 import PlusSVG from "@public/plus_round.svg";
+import CloseSVG from "@public/x.circle.fill.svg"
+
 
 const DURATION = 1;
 
@@ -89,11 +91,24 @@ class GroupList extends LitElement {
     })
   }
 
-  fireEvent(e: MouseEvent) {
+  fireAddNewGroupEvent(e: MouseEvent) {
     const target = e.currentTarget as Element;
     const eventType = target.className;
 
     this.dispatchEvent(new CustomEvent(eventType));
+  }
+
+   fireRemoveGroupEvent(e: MouseEvent) {
+    e.stopPropagation();
+    
+    const target = e.currentTarget as Element;
+    const groupId = target.id.split("-")[1];
+
+    this.dispatchEvent(
+      new CustomEvent("removeGroup", {
+        detail: groupId,
+      })
+    );
   }
 
   protected shouldUpdate(
@@ -244,6 +259,19 @@ class GroupList extends LitElement {
                     ></div>
                     <h3 style="color:${group.color}">${group.name}</h3>
                     <p>${group.channels.length} channels</p>
+
+                    ${group.name !== "etc" ? html`
+                      <div class="remove-btn" 
+                        id=${`groupRemove-${group.name}`}
+                        @click=${this.fireRemoveGroupEvent}>
+                        <component-svg
+                            .width=${22}
+                            .height=${22}
+                            .fill=${"inherit"}
+                            .data=${CloseSVG}
+                          ></component-svg>
+                      </div>
+                    `: ""}
                   </li>
                 `
               )}
@@ -254,7 +282,7 @@ class GroupList extends LitElement {
                 <p>${etc!.channels.length} channels</p>
               </li>
             </ul>
-            <div @click=${this.fireEvent} class="addNewGroup">
+            <div @click=${this.fireAddNewGroupEvent} class="addNewGroup">
               <component-svg
               .width=${24}
               .fill=${"inherit"}

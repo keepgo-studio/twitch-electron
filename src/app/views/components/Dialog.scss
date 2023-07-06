@@ -46,8 +46,9 @@ p {
   background-color: $black;
   border-radius: 7px;
   
-  &:active {
-    border: $twitch-purple 1px solid;
+  &:focus {
+    border: none;
+    outline: $twitch-purple 1px solid;
   }
 }
 h3 {
@@ -84,6 +85,7 @@ button.confirm {
 }
 
 .alert-confirm {
+  grid-column: 2;
   background-color: $black-ops;
   
   &:hover {

@@ -12,6 +12,7 @@ type WorkerPostEvents =
   | "result-add-new-group"
   | "result-save-aot"
   | "result-changing-group-name"
+  | "result-removing-group"
   | "result-changing-group-color"
   | "result-sync-twitch-followed-list"
   // Group
@@ -41,6 +42,7 @@ type MainPostEvents =
   | "append-new-group"
   | "save-aot-result"
   | "change-group-name"
+  | "remove-group"
   | "change-group-color"
   | "sync-twitch-followed-list"
   ;

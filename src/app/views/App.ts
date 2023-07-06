@@ -89,7 +89,7 @@ class MainView extends LitElement {
   @state()
   _currentGroupId: GroupId
   @state()
-  _followList?: Array<TChannel>
+  _channelList?: Array<TChannel>
   @state()
   _groupList?: Array<TGroup>
   @state()
@@ -108,7 +108,7 @@ class MainView extends LitElement {
   ViewTwitchAuth: HTMLElement;
 
   runMain() {
-    if (this._followList !== undefined && 
+    if (this._channelList !== undefined && 
       this._groupList !== undefined &&
       this._streamList !== undefined) {
         this._service.send("complete getting all data");
@@ -139,7 +139,7 @@ class MainView extends LitElement {
       this._service.send("first complete");
     }
     else if (e.data.type === "return-followed-list") {
-      this._followList = e.data.data;
+      this._channelList = e.data.data;
       this.runMain();
     }
     else if (e.data.type === "return-group-list") {
@@ -299,7 +299,7 @@ class MainView extends LitElement {
         ></view-twitch-auth>
 
         <view-main
-          .followList=${this._followList}
+          .channelList=${this._channelList}
           .groupList=${this._groupList}
           .streamList=${this._streamList}
           .userInfo=${this._userInfo}
