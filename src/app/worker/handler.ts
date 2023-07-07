@@ -148,7 +148,6 @@ export class ViewAppHandler extends ViewHandler {
             }
 
             let group = await tx.store.get(findChannel.group_id);
-
             if (group === undefined) {
               group = await tx.store.get("etc");
               findChannel.group_id = "etc";
@@ -588,16 +587,18 @@ export class ViewMainHandler extends ViewHandler {
 
             const tx = DB.userDB!.transaction("Groups", "readwrite");
 
+            if (findChannel === undefined || findChannel.profile_image_url === "") {
+              needThumbnailChanels.push({
+                key: "id",
+                val: _channel.broadcaster_id
+              });
+            }
+
             if (findChannel === undefined) {
               const etcGroup = await tx.store.get("etc");
 
               etcGroup!.channels.push(_channel.broadcaster_id);
               tx.store.put(etcGroup!, "etc");
-
-              needThumbnailChanels.push({
-                key: "id",
-                val: _channel.broadcaster_id
-              });
 
               return {
                 broadcaster_id: _channel.broadcaster_id,
@@ -668,6 +669,9 @@ export class ViewMainHandler extends ViewHandler {
           }))
         }
 
+        const ctx = DB.userDB!.transaction("Channels", "readonly");
+        const allChannels = await ctx.store.getAll();
+
         const gtx = DB.userDB!.transaction("Groups", "readonly");
         const syncGroups = await gtx.store.getAll();
 
@@ -691,7 +695,7 @@ export class ViewMainHandler extends ViewHandler {
           origin: "worker",
           type: "result-sync-twitch-followed-list",
           data: {
-            syncChannels,
+            syncChannels: allChannels,
             syncGroups,
             syncStreams: stream_list
           }

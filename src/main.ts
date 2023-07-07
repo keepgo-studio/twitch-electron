@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Worker } from 'worker_threads';
-import { app, BrowserWindow, ipcMain, shell, dialog, session, MessageChannelMain } from "electron";
+import { app, BrowserWindow, ipcMain, shell, dialog, session, globalShortcut } from "electron";
 
 import type { MessageToMain } from 'server';
 
@@ -102,7 +102,6 @@ class PlayerProcess {
             this.win!.hide();
             this.win!.webContents.send("hide-window");
         });
-
         // this.win.webContents.openDevTools({ mode: "detach" })
     }
 
@@ -211,6 +210,12 @@ class MainProcess {
 
         app.on("before-quit", () => {
             PlayerProcess.win?.destroy();
+        })
+
+        app.on("browser-window-focus", function () {
+            globalShortcut.register("CommandOrControl+R", () => {})
+            globalShortcut.register("CommandOrControl+Shift+R", () => {})
+            globalShortcut.register("F5", () => {})
         })
     }
 

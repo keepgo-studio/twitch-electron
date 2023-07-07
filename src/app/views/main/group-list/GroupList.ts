@@ -4,7 +4,7 @@ import { customElement, property, query } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { Draggable } from "gsap/Draggable";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Elastic, Expo, gsap } from "gsap";
+import { Expo, gsap } from "gsap";
 
 import styles from "./GroupList.scss";
 
@@ -12,7 +12,7 @@ import PlusSVG from "@public/plus_round.svg";
 import CloseSVG from "@public/x.circle.fill.svg"
 
 
-const DURATION = 1;
+const DURATION = 0.5;
 
 let tlId: GSAPTimeline | undefined;
 
@@ -29,7 +29,7 @@ const openMacro = (root: Element, shadow:Element, maxHeight: number) => {
   })
   .to(root, {
     y: maxHeight,
-    ease: Elastic.easeOut,
+    ease: Expo.easeOut,
     duration: DURATION,
   })
   .to(shadow, {
@@ -53,7 +53,7 @@ const closeMacro = (root: Element, shadow:Element) => {
   .timeline()
   .to(root, {
     y: 0,
-    ease: Elastic.easeOut,
+    ease: Expo.easeOut,
     duration: DURATION,
   })
   .to(shadow, {
