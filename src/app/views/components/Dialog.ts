@@ -1,10 +1,20 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from 'lit';
+import { ViewCore } from '@utils/core';
+import { PropertyValueMap, html, unsafeCSS } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
+import { getLangJson } from '@utils/functions';
 
 import styles from "./Dialog.scss";
 
-export abstract class DialogCore extends LitElement {
+export abstract class DialogCore extends ViewCore {
   static styles = unsafeCSS(styles);
+
+  public langJson: PlayerLangMap;
+
+  constructor() {
+    super();
+    
+    this.langJson = getLangJson();
+  }
 
 	@state()
   _closeDialog?: boolean;
@@ -89,8 +99,12 @@ export class Confirm extends DialogCore {
             <p>${this._confirmMsg}</p>
             
             <div class="btn-container">
-                <button @click=${this.handleSubmit} class="cancel">Cancel</button>
-                <button @click=${this.handleSubmit} class="confirm">Confirm</button>
+                <button @click=${this.handleSubmit} class="cancel">
+                ${this.langJson.dialog.confirm.cancel}
+                </button>
+                <button @click=${this.handleSubmit} class="confirm">
+                ${this.langJson.dialog.confirm.confirm}
+                </button>
             </div>
         </div>
       </div>
@@ -167,8 +181,12 @@ export class Prompt extends DialogCore {
             ${this._errorMessage && html`<h3 class="error">${this._errorMessage}</h3>`}
             
             <div class="btn-container">
-                <button @click=${this.handleSubmit} class="cancel">Cancel</button>
-                <button @click=${this.handleSubmit} class="confirm">Confirm</button>
+                <button @click=${this.handleSubmit} class="cancel">
+                ${this.langJson.dialog.prompt.cancel}
+                </button>
+                <button @click=${this.handleSubmit} class="confirm">
+                ${this.langJson.dialog.prompt.confirm}
+                </button>
             </div>
         </div>
       </div>
@@ -209,7 +227,9 @@ export class Alert extends DialogCore {
             <p>${this._alertMsg}</p>
             
             <div class="btn-container">
-                <button @click=${this.handleSubmit} class="alert-confirm">ok</button>
+                <button @click=${this.handleSubmit} class="alert-confirm">
+                ${this.langJson.dialog.alert.confirm}
+                </button>
             </div>
         </div>
       </div>

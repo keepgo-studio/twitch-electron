@@ -67,7 +67,7 @@ export default class DB {
           {
             name: "etc",
             channels: [],
-            color: "#9146FF",
+            color: "#4E555D",
             created_at: new Date().getTime().toString(),
           },
           "etc");

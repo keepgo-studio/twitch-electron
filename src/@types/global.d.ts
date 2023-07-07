@@ -84,6 +84,82 @@ declare global {
   }
 
   type PlayerMode = "player" | "detach";
+
+  interface PlayerLangMap {
+    twitchAuth: {
+      reAuth: {
+        h3Token: string,
+        h3Profile: string
+  
+      },
+      newAuth: {
+        h3Auth: string
+      },
+      requestBtn: string
+    },
+    main: {
+      all: string,
+      etc: string,
+      alertAddNewGroup: {
+        header: string,
+        body: string
+      },
+      alertChangeGroupName: {
+        header: string,
+        body: string
+      },
+      alertAllEtcChangeGroupName: {
+        all: {
+          header: string,
+          body: string
+        },
+        etc: {
+          header: string,
+          body: string
+        }
+      },
+      alertAllChangeColor: {
+        header: string,
+        body: string
+      },
+      conformRemoveGroup: {
+        header: string 
+        body: string
+      },
+      promptAddNewGroup: {
+        header: string,
+        body: string
+      },
+      promptChangeGroupName: {
+        header: string,
+        body: string
+      }
+    },
+    dialog: {
+      confirm: {
+        cancel: string,
+        confirm: string
+      },
+      prompt: {
+        cancel: string,
+        confirm: string  
+      },
+      alert: {
+        confirm: string
+      },
+      colorPicker: {
+        h1: string,
+        p: string,
+        cancel: string,
+        confirm: string 
+      },
+      addChannels: {
+        h3: string,
+        cancel: string,
+        confirm: string 
+      }
+    }
+  }
 }
 
 export {}

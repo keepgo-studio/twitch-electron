@@ -1,4 +1,5 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { ViewCore } from "@utils/core";
+import { PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { sendToWorker } from "@utils/message";
@@ -15,7 +16,7 @@ import PlaySVG from "@public/play_circle_filled.svg";
 import CloseSVG from "@public/x.circle.fill.svg"
 
 @customElement("view-group")
-class Group extends LitElement {
+class Group extends ViewCore {
   _io: IntersectionObserver;
   static styles = unsafeCSS(styles);
 
@@ -213,6 +214,10 @@ class Group extends LitElement {
         _channel.group_id === this.group!.name) liveCnt++;
     })
 
+    let isGroupNameAllOrEtc = this.group!.name;
+    if (isGroupNameAllOrEtc === "all") isGroupNameAllOrEtc = this.langJson.main.all;
+    else if (isGroupNameAllOrEtc === "etc") isGroupNameAllOrEtc = this.langJson.main.etc;
+
     return html`
       <style>
         .body::-webkit-scrollbar-thumb {
@@ -226,7 +231,7 @@ class Group extends LitElement {
 
           <div class="group-info">
             <div style="color:${groupColor}" class="group-name">
-              ${this.group?.name}
+              ${isGroupNameAllOrEtc}
             </div>
 
             <div class="channel-info-container">

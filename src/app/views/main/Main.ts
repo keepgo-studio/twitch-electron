@@ -1,4 +1,5 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { ViewCore } from "@utils/core";
+import { PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 import { Alert, Confirm, Prompt } from "@views/components/Dialog";
@@ -29,7 +30,7 @@ const findGroup = (groupId: GroupId, groupList?: Array<TGroup>): TGroup | undefi
 let deletedChannel: TChannel | undefined = undefined;
 
 @customElement("view-main")
-class Main extends LitElement {
+class Main extends ViewCore {
   static styles = unsafeCSS(styles);
 
   private _preventSyncMultiples = false;
@@ -68,7 +69,8 @@ class Main extends LitElement {
     
     if (eventType === "result-add-new-group") {
       if (e.data.data === undefined) {
-        await new Alert("Error","already exist group name").show();
+        const {header, body} = this.langJson.main.alertAddNewGroup;
+        await new Alert(header,body).show();
         return;
       }
 
@@ -87,7 +89,8 @@ class Main extends LitElement {
       const { newChannels, newName } = e.data.data;
 
       if (newName === undefined) {
-        await new Alert("Error","already exist group name").show();
+        const {header, body} = this.langJson.main.alertChangeGroupName;
+        await new Alert(header,body).show();
         return;
       }
       
@@ -200,7 +203,8 @@ class Main extends LitElement {
 
   async removeGroupListener(e: CustomEvent) {
     const groupId = e.detail;
-    const response = await new Confirm(`Remove ${groupId}`, "Do you really want to remove this group?").show();
+    const {header, body} = this.langJson.main.conformRemoveGroup;
+    const response = await new Confirm(`${header} ${groupId}`, body).show();
 
     if (!response) return;
 
@@ -213,7 +217,8 @@ class Main extends LitElement {
   }
 
   async addNewGroupListener(e: CustomEvent) {
-    const newName = await new Prompt("New Group's Name",'Type new group\'s name').show()
+    const {header, body} = this.langJson.main.promptAddNewGroup;
+    const newName = await new Prompt(header, body).show()
 
     if (newName === undefined) return;
 
@@ -258,15 +263,18 @@ class Main extends LitElement {
   }
   async changeGroupNameListener() {
     if (this._currentGroupId === "all") {
-      await new Alert("Error", "you cannot change group name for 'all' group").show();
+      const {header, body} = this.langJson.main.alertAllEtcChangeGroupName.all;
+      await new Alert(header, body).show();
       return;
     }
     else if (this._currentGroupId === "etc") {
-      await new Alert("Error", "you cannot change group name for 'etc' group").show();
+      const {header, body} = this.langJson.main.alertAllEtcChangeGroupName.etc;
+      await new Alert(header, body).show();
       return;
     }
 
-    const newName = await new Prompt("Change Group Name", 'Type changed group name').show()
+    const {header, body} = this.langJson.main.promptChangeGroupName;
+    const newName = await new Prompt(header, body).show()
 
     if (newName === undefined) return;
 
@@ -285,7 +293,8 @@ class Main extends LitElement {
   }
   async chagneColorListener() {
     if (this._currentGroupId === "all") {
-      await new Alert("Error", "Cannot change color for All").show();
+      const {header, body} = this.langJson.main.alertAllChangeColor;
+      await new Alert(header, body).show();
       return;
     }
 

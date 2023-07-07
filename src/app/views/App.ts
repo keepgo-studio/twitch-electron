@@ -153,7 +153,6 @@ class MainView extends LitElement {
     else if (e.data.type === "return-stream-channels") {
       this._streamList = e.data.data;
       this.runMain();
-      console.log("sync streams");
     }
   }
 
@@ -264,6 +263,13 @@ class MainView extends LitElement {
             sendToWorker(messageChannel);
             sendToWorker(messageGroup);
 
+            const messageStream: WebMessageForm<AppPostEvents> = {
+              origin: "view-app",
+              type: "get-stream-list",
+              data: this._userInfo
+            }
+            sendToWorker(messageStream);
+
             this._syncIntervalId = setInterval(() => {
               const messageStream: WebMessageForm<AppPostEvents> = {
                 origin: "view-app",
@@ -271,7 +277,7 @@ class MainView extends LitElement {
                 data: this._userInfo
               }
               sendToWorker(messageStream);
-            }, 60000);
+            }, 180000);
           }
         },
         guards: {

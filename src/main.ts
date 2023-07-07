@@ -59,7 +59,6 @@ class PlayerProcess {
             params.set('referrer', 'https://localhost/');
         
             var redirectURL = 'https://embed.twitch.tv/?' + params.toString();
-            // console.log('Adjust to', redirectURL);
         
             cb({
               cancel: false,
@@ -76,10 +75,7 @@ class PlayerProcess {
         }, (details, cb) => {
             var responseHeaders = details.responseHeaders!;
         
-            // console.log('headers', details.url, responseHeaders);
-        
             delete responseHeaders['Content-Security-Policy'];
-            // console.log('after', responseHeaders);
         
             cb({
                 cancel: false,

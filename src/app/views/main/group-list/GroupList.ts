@@ -1,4 +1,5 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { ViewCore } from "@utils/core";
+import { PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { Draggable } from "gsap/Draggable";
@@ -68,7 +69,7 @@ const closeMacro = (root: Element, shadow:Element) => {
 }
 
 @customElement("view-group-list")
-class GroupList extends LitElement {
+class GroupList extends ViewCore {
   static styles = unsafeCSS(styles);
 
   @property({ type: Array })
@@ -244,7 +245,7 @@ class GroupList extends LitElement {
             <ul>
               <li @click=${this.changeGroup} id="groupd-all">
                 <div style="background-color: #fff" class="box"></div>
-                <h3 style="color: #fff">all</h3>
+                <h3 style="color: #fff">${this.langJson.main.all}</h3>
                 <p>${totalChannels} channels</p>
               </li>
   
@@ -278,7 +279,7 @@ class GroupList extends LitElement {
   
               <li @click=${this.changeGroup} id="group-etc">
                 <div style="background-color: ${etc!.color}" class="box"></div>
-                <h3 style="color:${etc!.color}">${etc!.name}</h3>
+                <h3 style="color:${etc!.color}">${this.langJson.main.etc}</h3>
                 <p>${etc!.channels.length} channels</p>
               </li>
             </ul>

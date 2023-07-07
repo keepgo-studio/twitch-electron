@@ -128,7 +128,6 @@ export class AddChannelsDialog extends DialogCore {
     })
 
     if (Object.keys(channelPerGroup).length === 0) {
-      console.log("all channels in here");
       this._noChannels = true;
       this._closeDialog = true;
     }
@@ -137,7 +136,7 @@ export class AddChannelsDialog extends DialogCore {
       <section id="add-channels">
         <div class="container">
           <div class="header">
-            <h3>Add channels to Group</h3>
+            <h3>${this.langJson.dialog.addChannels.h3}</h3>
             <h1>${this._currentGroupId}</h1>
             <p>current <span>${this._chooseChannels.length} channels</span> selected</p>
           </div>
@@ -171,12 +170,12 @@ export class AddChannelsDialog extends DialogCore {
             <button 
             class="cancel"
             @click=${this.handleSubmit}
-            >Cancel</button>
+            >${this.langJson.dialog.addChannels.cancel}</button>
 
             <button 
             class="confirm ${this._chooseChannels.length === 0 ? "empty" : ""}"
             @click=${this.handleSubmit}
-            >Confirm</button>
+            >${this.langJson.dialog.addChannels.confirm}</button>
           </div>
         </div>
       </section>

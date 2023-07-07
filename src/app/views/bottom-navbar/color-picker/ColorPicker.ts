@@ -46,7 +46,7 @@ export class ColorPicker extends DialogCore {
     return html`
       <div class="dialog">
         <div class="container">
-            <h1>Select Colors</h1>
+            <h1>${this.langJson.dialog.colorPicker.h1}</h1>
 
             <div class="current-color">
               <div style="background-color:${this._selectColor}" class="box"></div> 
@@ -56,7 +56,7 @@ export class ColorPicker extends DialogCore {
               </div>
             </div>
 
-            <p>pick color you want to change</p>
+            <p>${this.langJson.dialog.colorPicker.p}</p>
             
             <ul>
               ${repeat([...Object.keys(ColorMap)],
@@ -77,8 +77,12 @@ export class ColorPicker extends DialogCore {
             </ul>
 
             <div class="btn-container">
-              <button @click=${this.handleSubmit} class="cancel">cancel</button>
-              <button @click=${this.handleSubmit} class="confirm">confirm</button>
+              <button @click=${this.handleSubmit} class="cancel">
+              ${this.langJson.dialog.colorPicker.cancel}
+              </button>
+              <button @click=${this.handleSubmit} class="confirm">
+              ${this.langJson.dialog.colorPicker.confirm}
+              </button>
             </div>
         </div>
       </div>

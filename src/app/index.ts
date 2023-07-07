@@ -10,7 +10,19 @@ import "@components/Dialog"
 import "@components/Loading"
 import "@components/SVG"
 
-function main () {    
+async function main () {
+  const setLang = await fetch('http://ip-api.com/json')
+  .then((r) => r.json())
+  .then((payload) => {
+    if (payload.countryCode === "KR")
+      return 'ko'
+    else 
+      return 'en'
+  })
+  .catch(() => 'en');
+
+  document.documentElement.setAttribute("lang",setLang);
+
   window.worker = new Worker("/app/worker.js");
 
   const app = document.createElement(AppTag);

@@ -1,16 +1,18 @@
-import { LitElement, PropertyValueMap, html, unsafeCSS } from "lit";
+import { PropertyValueMap, html, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { Interpreter, State } from "xstate";
 import { addWorkerListener, removeWorkerListener, sendToWorker } from "@utils/message";
 import { FbaseAuthEvents } from "@state/App.state";
+import { Expo, gsap } from "gsap";
 
 import type { AuthPostEvents, WorkerPostEvents } from "@utils/events";
 
 import styles from "./TwitchAuth.scss";
-import { Expo, gsap } from "gsap";
+import { getLangJson } from "@utils/functions";
+import { ViewCore } from "@utils/core";
 
 @customElement("view-twitch-auth")
-class TwitchAuthView extends LitElement {
+class TwitchAuthView extends ViewCore {
   static styles = unsafeCSS(styles);
 
   private _subscribed = false;
@@ -101,7 +103,7 @@ class TwitchAuthView extends LitElement {
         data: this._userInfo
       }
       sendToWorker(messageOpenDB);
-    })
+    });
   }
 
   disconnectedCallback(): void {
@@ -126,7 +128,7 @@ class TwitchAuthView extends LitElement {
     const isAddingNew = this.profile.username === "undefined--adding-new-user";
 
     const reAuthUserHTML = html`
-      <h3>Token expired</h3>
+      <h3>${this.langJson.twitchAuth.reAuth.h3Token}</h3>
 
       <div>
         <h2>To <span>give permission </span>for,</h2>
@@ -136,7 +138,7 @@ class TwitchAuthView extends LitElement {
     `
 
     const newUserHTML = html`
-      <h3>Add new user</h3>
+      <h3>${this.langJson.twitchAuth.newAuth.h3Auth}</h3>
 
       <img src="public/logo.png"/>
     `
@@ -149,7 +151,7 @@ class TwitchAuthView extends LitElement {
 
         <div class="profile-container">
           <div class="profile">
-            <h3>${isAddingNew ? "" : "Authorization again with"}</h3>
+            <h3>${isAddingNew ? "" : this.langJson.twitchAuth.reAuth.h3Profile}</h3>
             <h1>${isAddingNew ? "" : this.profile.username}</h1>
           </div>
 
@@ -158,7 +160,7 @@ class TwitchAuthView extends LitElement {
           <button @click=${this.btnClickHandler}>
             <div class="hover-effect"></div>
             <div class="icon"><img src="public/TwitchGlitchPurple.png"/></div>
-            <p>REQUEST AUTH</p>
+            <p>${this.langJson.twitchAuth.requestBtn}</p>
           </button>
         </div>
 
@@ -167,7 +169,6 @@ class TwitchAuthView extends LitElement {
           <h1>${this._name}</h1>
         </div>
       </div>
-
     `;
   }
 }
