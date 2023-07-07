@@ -11,8 +11,10 @@ function initAPI() {
     syncAot: async (aot: boolean) => await ipcRenderer.invoke("sync-aot", {
       renderer: "player",
       aot
-    })
-  });
+    }),
+
+    focusApp: () => ipcRenderer.invoke("focus-app")
+  })
 }
 
 function main() {

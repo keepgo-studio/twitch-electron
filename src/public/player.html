@@ -7,29 +7,184 @@
   <title>Player</title>
 
   <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
     body {
       width: 100vw;
       height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #1F1F23;
+      overflow: hidden;
     }
-    #twitch-embed {
+    header {
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      left: 0;
+    }
+    .logo,
+    .logo img {
       height: 100%;
     }
+    .btn-container {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+    button {
+      border-radius: 3px;
+      display: block;
+      background-color: #9146FF;
+      border: none;
+      height: 100%;
+      padding: 0 16px;
+      color: #fff;
+      fill: #fff;
+      transition: ease 300ms;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #8205B4;
+    }
+    #btn-aot img {
+      height: 100%;
+    }
+    button.disable {
+      background-color: #34343c;
+      fill: #8A8C8E;
+    }
+    #btn-aot.disable:hover {
+      filter: brightness(0.7);
+    }
+    .btn-container button:not(:last-child) {
+      margin-right: 8px;
+    }
+
+
+    main {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      overflow: hidden;
+    }
+    #twitch-embed {
+      flex: 1;
+    }
+    #twitch-embed-chat {
+      border: none;
+    }
   </style>
+
 </head>
 <body>
-  <div>
-    <button>AOT</button>
-    <button>Chat</button>
-    <button>Home</button>
-  </div>
+  <header>
+    <div class="logo">
+      <img src="logo.png" />
+    </div>
 
-  <div id="twitch-embed"></div>
+    <div class="btn-container">
+      <button id="btn-aot">
+        <img />
+      </button>
+      <button id="btn-chat">Chat</button>
+      <button id="btn-home">Home</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="twitch-embed"></div>
+    <iframe id="twitch-embed-chat"></iframe>
+  </main>
   
   <script src="https://embed.twitch.tv/embed/v1.js"></script>
   <script type="text/javascript">
-    let aot = localStorage.getItem("aot") ?? false;
-    localStorage.setItem("aot", aot);
-    window.api.syncAot(aot);
+    const stringToBoolean = (bool) => {
+      if (bool === "false") return false;
+      else if (bool === "true") return true;
+      else return undefined;
+    }
+
+    // --------------------------- aot ---------------------------
+    (() => {
+      const updateAotBtn = (bool) => {
+        const btn = document.getElementById("btn-aot");
+
+        if (bool) {
+          btn.querySelector("img").src = "window.up.svg";
+          btn.classList.remove("disable");
+        }
+        else {
+          btn.querySelector("img").src = "window.down.svg";
+          btn.classList.add("disable");
+        }
+      }
+      const localAotKey = "aot";
+      let aot = localStorage.getItem(localAotKey);
+  
+      if (aot === null) {
+        aot = "false";
+      }
+      let aotBool = stringToBoolean(aot);
+      window.api.syncAot(aotBool);
+      updateAotBtn(aotBool);
+      
+      document.getElementById("btn-aot").addEventListener("click", () => {
+        aotBool = !aotBool;
+        localStorage.setItem(localAotKey, aotBool.toString());
+        window.api.syncAot(aotBool);
+        updateAotBtn(aotBool);
+      });
+    })();
+    // --------------------------- aot ---------------------------
+
+
+    // --------------------------- chat ---------------------------
+    (() => {
+      const shouldOpenChat = (bool) => {
+        const chatIframe = document.getElementById("twitch-embed-chat");
+        const btn = document.getElementById("btn-chat");
+
+        if (bool) {
+          chatIframe.style.width = "fit-content";
+          btn.classList.remove("disable");
+        }
+        else {
+          chatIframe.style.width = "0px";
+          btn.classList.add("disable");
+        }
+      }
+      const localChatKey = "chat-mode";
+      let chat = localStorage.getItem(localChatKey);
+      if (chat === null) {
+        chat = "false";
+      }
+      let chatBool = stringToBoolean(chat);
+      shouldOpenChat(chatBool);
+  
+      document.getElementById("btn-chat").addEventListener("click", () => {
+        chatBool = !chatBool;
+        localStorage.setItem(localChatKey, chatBool.toString());
+        shouldOpenChat(chatBool);
+      });
+    })()
+
+    // --------------------------- chat ---------------------------
+
+    // --------------------------- home ---------------------------
+    document.getElementById("btn-home").addEventListener("click", () => {
+      window.api.focusApp();
+    })
+    // --------------------------- home ---------------------------
+
 
     const url = new URL(window.location.href);
     const broadcaster_login = url.searchParams.get("login");
@@ -42,19 +197,15 @@
         parent: ["localhost"]
       };
       const player = new Twitch.Player("twitch-embed", options);
-      
-      const aotButton = document.body.querySelector("button");
-      aotButton.addEventListener("click", () => {
-        aot = !aot;
-        localStorage.setItem("aot", aot);
-        window.api.syncAot(aot);
-      })
 
       window.api.hideWindowLitsener(() => {
         player.pause()
       })
     }
 
+    const chatIframe = document.getElementById("twitch-embed-chat");
+    chatIframe.src = `https://www.twitch.tv/embed/${broadcaster_login}/chat?darkpopout&parent=localhost`
+    chatIframe.height = "100%";
   </script>
 </body>
 </html>

@@ -102,6 +102,8 @@ class PlayerProcess {
             this.win!.hide();
             this.win!.webContents.send("hide-window");
         });
+
+        // this.win.webContents.openDevTools({ mode: "detach" })
     }
 
     static open() {
@@ -159,8 +161,7 @@ class AppProcess {
             PlayerProcess.win?.destroy();
         });
 
-        // remove when deploy
-        this.win.webContents.openDevTools({ mode: "detach" })
+        // this.win.webContents.openDevTools({ mode: "detach" })
     }
 }
 
@@ -232,6 +233,11 @@ class MainProcess {
         ipcMain.handle("open-player", (_, channel) => {
             PlayerProcess.open();   
             PlayerProcess.changeChannel(channel);
+        })
+
+        ipcMain.handle("focus-app", () => {
+            AppProcess.win.show();
+            AppProcess.win.focus();
         })
     }
 }
