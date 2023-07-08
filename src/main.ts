@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Worker } from 'worker_threads';
-import { app, BrowserWindow, ipcMain, shell, dialog, session, globalShortcut } from "electron";
+import { app, BrowserWindow, ipcMain, shell, dialog, session } from "electron";
 
 import type { MessageToMain } from 'server';
 
@@ -102,6 +102,7 @@ class PlayerProcess {
             this.win!.hide();
             this.win!.webContents.send("hide-window");
         });
+
         // this.win.webContents.openDevTools({ mode: "detach" })
     }
 
@@ -203,19 +204,13 @@ class MainProcess {
 
         // quit program
         app.on("window-all-closed", function() {
-            if (process.platform === "darwin") {
+            if (process.platform !== "darwin") {
                 app.quit();
             }
         })
 
         app.on("before-quit", () => {
             PlayerProcess.win?.destroy();
-        })
-
-        app.on("browser-window-focus", function () {
-            globalShortcut.register("CommandOrControl+R", () => {})
-            globalShortcut.register("CommandOrControl+Shift+R", () => {})
-            globalShortcut.register("F5", () => {})
         })
     }
 

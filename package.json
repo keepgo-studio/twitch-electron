@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install": "cat packages.dev.txt | xargs npm install --save-dev && cat packages.txt | xargs npm install",
     "build": "gulp build",
     "watch-hot-reload": "gulp hot-reload",
     "watch-electron": "electron dist/main.js",
