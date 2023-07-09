@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Worker } from 'worker_threads';
-import { app, BrowserWindow, ipcMain, shell, dialog, session } from "electron";
+import { app, BrowserWindow, ipcMain, shell, session, globalShortcut } from "electron";
 
 import type { MessageToMain } from 'server';
 
@@ -19,11 +19,25 @@ function arrayBufferToJson(buffer: ArrayBuffer) {
 
 function shouldQuit() {
     if (AppProcess.isHide && PlayerProcess.isHide) {
-        if (process.platform !== "darwin")
+        if (process.platform !== "darwin") {
             app.exit(0);
+        }
+        
+        if (!app.isPackaged) {
+            app.exit(0);
+        }
+    }
+}
 
-        if (!app.isPackaged) 
+class MainLifeCycleProcess {
+    static win?: BrowserWindow;
+    
+    static create() {
+        this.win = new BrowserWindow({ show: false });
+
+        this.win.on("closed", () => {
             app.exit(0);
+        });
     }
 }
 
@@ -143,6 +157,7 @@ class AppProcess {
             webPreferences: {
                 preload: path.join(__dirname, "app.preload.js")
             },
+            backgroundColor: "#1F1F23",
             resizable: false,
             width: 390,
             height: 730,
@@ -165,6 +180,9 @@ class AppProcess {
 
         this.win.on("show", () => this.isHide = false);
 
+        this.win.once("ready-to-show", () => {
+            this.win.show();
+        })
         // this.win.webContents.openDevTools({ mode: "detach" })
     }
 }
@@ -195,6 +213,7 @@ class MainProcess {
     static runApp() {
         // run program
         app.whenReady().then(() => {
+            MainLifeCycleProcess.create();
             AppProcess.create(this.opened_port);
             PlayerProcess.create();
 
@@ -202,13 +221,6 @@ class MainProcess {
                 AppProcess.win.show();
                 AppProcess.win.focus();
             })
-        })
-
-        // quit program
-        app.on("window-all-closed", function() {
-            if (process.platform !== "darwin") {
-                app.quit();
-            }
         })
     }
 
