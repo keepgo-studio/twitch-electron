@@ -4,7 +4,7 @@ import { customElement, property, query } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { Draggable } from "gsap/Draggable";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Expo, gsap } from "gsap";
+import { Elastic, Expo, gsap } from "gsap";
 
 import styles from "./GroupList.scss";
 
@@ -29,7 +29,7 @@ const openMacro = (root: Element, shadow:Element, maxHeight: number) => {
   })
   .to(root, {
     y: maxHeight,
-    ease: Expo.easeOut,
+    ease: Elastic.easeOut.config(0.8, 0.4),
     duration: DURATION,
   })
   .to(shadow, {
@@ -52,7 +52,7 @@ const closeMacro = (root: Element, shadow:Element) => {
   .timeline()
   .to(root, {
     y: 0,
-    ease: Expo.easeOut,
+    ease: Elastic.easeOut.config(0.8, 0.4),
     duration: DURATION,
   })
   .to(shadow, {
