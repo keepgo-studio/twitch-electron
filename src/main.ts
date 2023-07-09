@@ -17,9 +17,19 @@ function arrayBufferToJson(buffer: ArrayBuffer) {
     return JSON.parse(String.fromCharCode.apply(null, Array.from(new Uint8Array(buffer))));
 }
 
+function shouldQuit() {
+    if (AppProcess.isHide && PlayerProcess.isHide) {
+        if (process.platform !== "darwin")
+            app.exit(0);
+
+        if (!app.isPackaged) 
+            app.exit(0);
+    }
+}
 
 class PlayerProcess {
     static win?: BrowserWindow;
+    static isHide = true;
 
     static create() {
         session.defaultSession.webRequest.onCompleted({
@@ -94,14 +104,19 @@ class PlayerProcess {
             alwaysOnTop: true
         });
 
-        this.win!.loadFile(`public/player.html`);
+        this.win!.loadFile(path.join(__dirname, "public", "player.html"));
         this.win.removeMenu();
 
         this.win.on("close", (e) => {
             e.preventDefault();
             this.win!.hide();
             this.win!.webContents.send("hide-window");
+
+            this.isHide = true;
+            shouldQuit();
         });
+
+        this.win.on("show", () => this.isHide = false);
 
         // this.win.webContents.openDevTools({ mode: "detach" })
     }
@@ -111,7 +126,7 @@ class PlayerProcess {
     }
 
     static changeChannel(channel: TChannel) {
-        this.win!.loadFile(`public/player.html`, {
+        this.win!.loadFile(path.join(__dirname, "public", "player.html"), {
             query: {
                 login: channel.broadcaster_login
             }
@@ -121,8 +136,7 @@ class PlayerProcess {
 
 class AppProcess {
     static win: BrowserWindow;
-
-    static working = false;
+    static isHide = false;
 
     static create(port: number) {
         this.win = new BrowserWindow({
@@ -142,24 +156,14 @@ class AppProcess {
         this.win.removeMenu();
 
         this.win.on("close", (e) => {
-            if (!this.working) {
-                PlayerProcess.win?.destroy();
-                return;
-            }
-
-            const confirm = dialog.showMessageBoxSync({
-                type: "question before close",
-                buttons: ["Yes", "No"],
-                title: "still in progress...",
-                message: "data are still in progress, if you close now, the app won't save data correctly, are you sure to close right now?"
-            });
-
-            if (confirm === 1) {
-                e.preventDefault();
-            }
-
-            PlayerProcess.win?.destroy();
+            e.preventDefault();
+            this.win!.hide();
+            
+            this.isHide = true;
+            shouldQuit();
         });
+
+        this.win.on("show", () => this.isHide = false);
 
         // this.win.webContents.openDevTools({ mode: "detach" })
     }
@@ -195,10 +199,8 @@ class MainProcess {
             PlayerProcess.create();
 
             app.on("activate", function() {
-                if (BrowserWindow.getAllWindows().length === 0) {
-                    AppProcess.create(this.opened_port);
-                    PlayerProcess.create();
-                }
+                AppProcess.win.show();
+                AppProcess.win.focus();
             })
         })
 
@@ -207,10 +209,6 @@ class MainProcess {
             if (process.platform !== "darwin") {
                 app.quit();
             }
-        })
-
-        app.on("before-quit", () => {
-            PlayerProcess.win?.destroy();
         })
     }
 
@@ -231,7 +229,7 @@ class MainProcess {
         })
 
         ipcMain.handle("open-player", (_, channel) => {
-            PlayerProcess.open();   
+            PlayerProcess.open();
             PlayerProcess.changeChannel(channel);
         })
 
