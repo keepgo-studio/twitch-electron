@@ -25,7 +25,7 @@ const openMacro = (root: Element, shadow:Element, maxHeight: number) => {
   .timeline()
   .set(shadow, {
     opacity: 0,
-    display: "block"
+    zIndex: 998
   })
   .to(root, {
     y: maxHeight,
@@ -36,9 +36,8 @@ const openMacro = (root: Element, shadow:Element, maxHeight: number) => {
     opacity: 1,
     ease: Expo.easeOut,
     duration: 0.3
-  }, "-=1")
+  }, `-=${DURATION}`)
   .set(shadow, {
-    display:"block",
     opacity: 1,
     onComplete: () => tlId = undefined
   });
@@ -60,10 +59,10 @@ const closeMacro = (root: Element, shadow:Element) => {
     opacity: 0,
     ease: Expo.easeOut,
     duration: 0.3
-  }, "-=1")
+  }, `-=${DURATION}`)
   .set(shadow, {
     opacity: 0,
-    display: "none",
+    zIndex: -1,
     onComplete: () => tlId = undefined
   });
 }
