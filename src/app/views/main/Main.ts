@@ -35,6 +35,8 @@ class Main extends ViewCore {
 
   private _preventSyncMultiples = false;
 
+  private _syncIntervalId?: ReturnType<typeof setInterval>;
+
   @property({ type: Array})
   channelList?: Array<TChannel>
   @property({ type: Array})
@@ -153,6 +155,10 @@ class Main extends ViewCore {
       if (groupId === this._currentGroupId) {
         this._currentGroupId = "all";
       }
+    } else if (eventType === "result-sync-interval") {
+      const streamList = e.data.data;
+
+      this.streamList = [...streamList];
     }
   }
 
@@ -192,7 +198,17 @@ class Main extends ViewCore {
       if (target.tagName !== "VIEW-GROUP-LIST") {
         this.ViewGroupList.dispatchEvent(new CustomEvent("fold"));
       }
-    });    
+    });
+
+    this._syncIntervalId = setInterval(() => {
+      if (this.userInfo === undefined) return;
+      const message: WebMessageForm<MainPostEvents> = {
+        origin: "view-main",
+        type: "sync-interval",
+        data: this.userInfo
+      };
+      sendToWorker(message);
+    },180000)
   }
 
   changeGroupListener(e: CustomEvent) {
@@ -333,7 +349,7 @@ class Main extends ViewCore {
     });
     
     const message: WebMessageForm<MainPostEvents> = {
-      origin: "view-app",
+      origin: "view-main",
       type: "sync-twitch-followed-list",
       data: this.userInfo
     };
@@ -343,6 +359,8 @@ class Main extends ViewCore {
 
   disconnectedCallback(): void {
     removeWorkerListener(this.mainWorkerLisetener);
+
+    clearInterval(this._syncIntervalId);
   }
 
   render() {

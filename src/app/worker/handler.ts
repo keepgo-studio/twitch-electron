@@ -24,7 +24,24 @@ abstract class ViewHandler {
   abstract listener(): void;
 }
 
-export class ViewAppHandler extends ViewHandler {
+type TwitchStreamData = {
+  id: String;
+  user_id: String;
+  user_login: String;
+  user_name: String;
+  game_id: String;
+  game_name: String;
+  type: String;
+  title: String;
+  viewer_count: number;
+  started_at: String;
+  language: String;
+  thumbnail_url: String;
+  tag_ids: String[];
+  tags: String[];
+};
+
+export class ViewAppHandler extends ViewHandler {  
   listener() {
     addSelfListener(async (e) => {
       const eventType = e.data.type as AppPostEvents;
@@ -238,23 +255,6 @@ export class ViewAppHandler extends ViewHandler {
 
         sendToMainThread(message);
       } else if (eventType === "get-stream-list") {
-        type TwitchStreamData = {
-          id: String;
-          user_id: String;
-          user_login: String;
-          user_name: String;
-          game_id: String;
-          game_name: String;
-          type: String;
-          title: String;
-          viewer_count: number;
-          started_at: String;
-          language: String;
-          thumbnail_url: String;
-          tag_ids: String[];
-          tags: String[];
-        };
-
         let streamList: Array<TwitchStreamData>;
         const { access_token, current_user_id } = e.data.data as TUserInfo;
 
@@ -702,6 +702,34 @@ export class ViewMainHandler extends ViewHandler {
         };
 
         sendToMainThread(completeMessage);
+      } else if (eventType === "sync-interval") {
+        let streamList: Array<TwitchStreamData>;
+        const { access_token, current_user_id } = e.data.data as TUserInfo;
+
+        const { stream_list } = await fetch(
+          `${FBASE_FUNCTION_URL}/getStreamsList`,
+          {
+            method: "GET",
+            headers: {
+              access_token: access_token,
+              current_user_id: current_user_id,
+            } as any,
+          }
+        )
+          .then((res) => res.json())
+          .then((data) => data)
+          .catch(() => {
+            stream_list: [];
+          });
+
+        streamList = stream_list;
+
+        const streamMessage: WebMessageForm<WorkerPostEvents> = {
+          origin: "worker",
+          type: "result-sync-interval",
+          data: streamList,
+        };
+        sendToMainThread(streamMessage);
       }
     });
   }

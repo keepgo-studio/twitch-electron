@@ -15,6 +15,7 @@ type WorkerPostEvents =
   | "result-removing-group"
   | "result-changing-group-color"
   | "result-sync-twitch-followed-list"
+  | "result-sync-interval"
   // Group
   | "result-remove-channel-from-group"
   // AddChannels
@@ -45,6 +46,7 @@ type MainPostEvents =
   | "remove-group"
   | "change-group-color"
   | "sync-twitch-followed-list"
+  | "sync-interval"
   ;
 
 type GroupPostEvents =

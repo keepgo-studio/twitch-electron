@@ -80,8 +80,6 @@ class MainView extends LitElement {
 
   private _service;
 
-  private _syncIntervalId?: ReturnType<typeof setInterval>;
-
   @state()
   _state;
   @state()
@@ -245,10 +243,6 @@ class MainView extends LitElement {
           },
           "remove ui": () => {
             removingAnimation(this.ViewMain, "scroll");
-            if (this._syncIntervalId) {
-              clearInterval(this._syncIntervalId);
-              this._syncIntervalId = undefined;
-            }
           },
           "get saved data": () => {
             const messageChannel: WebMessageForm<AppPostEvents> = {
@@ -259,25 +253,16 @@ class MainView extends LitElement {
               origin: "view-app",
               type: "get-group-list"
             }
-
-            sendToWorker(messageChannel);
-            sendToWorker(messageGroup);
-
             const messageStream: WebMessageForm<AppPostEvents> = {
               origin: "view-app",
               type: "get-stream-list",
               data: this._userInfo
             }
+
+            sendToWorker(messageChannel);
+            sendToWorker(messageGroup);
             sendToWorker(messageStream);
 
-            this._syncIntervalId = setInterval(() => {
-              const messageStream: WebMessageForm<AppPostEvents> = {
-                origin: "view-app",
-                type: "get-stream-list",
-                data: this._userInfo
-              }
-              sendToWorker(messageStream);
-            }, 180000);
           }
         },
         guards: {
