@@ -1,7 +1,7 @@
 {
   "name": "twitch-player",
   "version": "1.0.1",
-  "description": "",
+  "description": "twitch electron app that can be a player and remote group controller",
   "main": "dist/main.js",
   "scripts": {
     "build": "gulp build",
@@ -15,7 +15,7 @@
     "make": "npm run build && electron-forge make"
   },
   "keywords": [],
-  "author": "",
+  "author": "keepgo-studio",
   "license": "ISC",
   "devDependencies": {
     "@electron-forge/cli": "^6.2.1",
