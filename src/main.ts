@@ -161,7 +161,6 @@ class AppProcess {
             resizable: false,
             width: 390,
             height: 730,
-            alwaysOnTop: true
         });
 
         this.win.loadURL(`http://localhost:${port}/`, {
@@ -231,10 +230,10 @@ class MainProcess {
 
         ipcMain.handle("sync-aot", (_, { renderer, aot }) => {
             if (renderer === "app") {
-                AppProcess.win.setAlwaysOnTop(aot);
+                AppProcess.win.setAlwaysOnTop(aot, "screen-saver");
             }
             else {
-                PlayerProcess.win?.setAlwaysOnTop(aot);
+                PlayerProcess.win?.setAlwaysOnTop(aot, "screen-saver");
             }
 
             return true;
