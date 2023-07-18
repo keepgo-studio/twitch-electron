@@ -1,5 +1,12 @@
 # twitch player
 
+<div style="text-align:center">
+
+### you can download for windows and mac 😎🎉
+
+<img style="width:200px" src="docs/hero.png">
+
+</div>
 
 ## Naming rules
 
