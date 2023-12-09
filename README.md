@@ -4,7 +4,7 @@
 
 ### you can download for windows and mac 😎🎉
 
-<img style="width:200px" src="docs/hero.png">
+<img style="width:600px" src="docs/hero.png">
 
 </div>
 
