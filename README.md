@@ -4,24 +4,8 @@
 
 ### you can download for windows and mac 😎🎉
 
+[Download Link](https://github.com/keepgo-studio/twitch-player/releases/tag/v1.0.1)
+
 <img style="width:600px" src="docs/hero.png">
 
 </div>
-
-## Naming rules
-
-components which are used as view => 
-
-```js
-  @customElement("view-*");
-```
-
-components which are used as reusable components => 
-
-```js
-  @customElemtn("component-*")
-```
-
-## caution
-
-addWorkerListner should strictly type checking needed
